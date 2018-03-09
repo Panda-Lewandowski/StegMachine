@@ -57,7 +57,9 @@ def gen_images():
             img_drawer = ImageDraw.Draw(img)
 
             img_drawer.text((10, 10), TEXT)
+            img_drawer.text((30, 60), TEXT)
             img.save("pure" + str(s) + ".png")
+
             msg = get_random_word(s * 2)
 
             hide_n_check("pure" + str(s) + ".png", msg, tool, s)
@@ -65,7 +67,7 @@ def gen_images():
             a = os.path.getsize(str(s) + ".png")
             b = os.path.getsize("pure" + str(s) + ".png")
             destiny = (a - b) / a
-            print(destiny)
+            #print(destiny)
 
         os.chdir("..")
 
