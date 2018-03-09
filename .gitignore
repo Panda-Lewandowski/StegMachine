@@ -102,3 +102,4 @@ ENV/
 
 .idea
 .DS_Store
+Tests/
