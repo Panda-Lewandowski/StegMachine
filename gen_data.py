@@ -30,7 +30,7 @@ def prepare():
 
 def hide_n_check(img, msg, tool, seed):
     decrypt = ""
-    path = "pure" + str(seed) + ".png"
+    path = "pure.png"
     out_path = str(seed) + ".png"
 
     if tool == "Stegano":
@@ -50,24 +50,19 @@ def gen_images():
             pass
         os.chdir(tool)
         color = (0, 0, 120)
+        img = Image.new('RGB', (90, 90), color)
+        img_drawer = ImageDraw.Draw(img)
+
+        img_drawer.text((10, 10), TEXT)
+        img_drawer.text((20, 60), TEXT)
+        img.save("pure.png")
 
         for s in SEED:
             random.seed(s)
-            img = Image.new('RGB', (100, 100), color)
-            img_drawer = ImageDraw.Draw(img)
 
-            img_drawer.text((10, 10), TEXT)
-            img_drawer.text((30, 60), TEXT)
-            img.save("pure" + str(s) + ".png")
+            msg = get_random_word(s * 10)
 
-            msg = get_random_word(s * 2)
-
-            hide_n_check("pure" + str(s) + ".png", msg, tool, s)
-
-            a = os.path.getsize(str(s) + ".png")
-            b = os.path.getsize("pure" + str(s) + ".png")
-            destiny = (a - b) / a
-            #print(destiny)
+            hide_n_check("pure.png", msg, tool, s)
 
         os.chdir("..")
 
