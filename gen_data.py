@@ -2,77 +2,72 @@ from PIL import Image, ImageDraw
 from stegano import lsb
 from string import ascii_letters
 import os
-import sys
 import random
 import shutil
 
-TOOLS = ["Stegano"]
 
-AMOUNT = 10
+class Generator:
+    def __init__(self, tools=None, text="SUPERSECRET", seed=[i for i in range(10, 210, 10)]):
+        if tools is None:
+            tools = ["Stegano"]
+        self.tools = tools
+        self.text = text
+        self.seed = seed
 
-TEXT = "SUPERSECRET"
+    def get_random_word(self, length):   # instead of os.urandom(5)
+        return ''.join(random.choice(ascii_letters) for i in range(length))
 
-SEED = [i for i in range(10, 210, 10)]
-
-
-def get_random_word(length):  # instead of os.urandom(5)
-    return ''.join(random.choice(ascii_letters) for i in range(length))
-
-
-def prepare():
-    path = os.getcwd() + "/Tests"
-    try:
-        os.mkdir(path=path)
-    except FileExistsError:
-        pass
-    os.chdir(path)
-
-
-def hide_n_check(img, msg, tool, seed):
-    decrypt = ""
-    path = "pure.png"
-    out_path = str(seed) + ".png"
-
-    if tool == "Stegano":
-        sec = lsb.hide(path, msg)
-        sec.save(out_path)
-        decrypt = lsb.reveal(out_path)
-
-    if decrypt != msg:
-        raise Exception("Ошибка извлечения")
-
-
-def gen_images():
-    for tool in TOOLS:
+    def prepare(self, ):
+        path = os.getcwd() + "/Tests"
         try:
-            os.mkdir(tool)
+            os.mkdir(path=path)
         except FileExistsError:
             pass
-        os.chdir(tool)
-        color = (0, 0, 120)
-        img = Image.new('RGB', (90, 90), color)
-        img_drawer = ImageDraw.Draw(img)
+        os.chdir(path)
 
-        img_drawer.text((10, 10), TEXT)
-        img_drawer.text((20, 60), TEXT)
-        img.save("pure.png")
+    def hide_n_check(self, path, msg, tool, seed):
+        decrypt = ""
+        out_path = str(seed) + ".png"
 
-        for s in SEED:
-            random.seed(s)
+        if tool == "Stegano":
+            sec = lsb.hide(path, msg)
+            sec.save(out_path)
+            decrypt = lsb.reveal(out_path)
 
-            msg = get_random_word(s * 10)
+        if decrypt != msg:
+            raise Exception("Ошибка извлечения")
 
-            hide_n_check("pure.png", msg, tool, s)
+    def gen_images(self):
+        for tool in self.tools:
+            try:
+                os.mkdir(tool)
+            except FileExistsError:
+                pass
+            os.chdir(tool)
+            color = (0, 0, 120)
+            img = Image.new('RGB', (90, 90), color)
+            img_drawer = ImageDraw.Draw(img)
 
+            img_drawer.text((10, 10), self.text)
+            img_drawer.text((20, 60), self.text)
+            img.save("pure.png")
+
+            for s in self.seed:
+                random.seed(s)
+
+                msg = self.get_random_word(s * 10)
+
+                self.hide_n_check("pure.png", msg, tool, s)
+
+            os.chdir("..")
+
+    def clear(self):
         os.chdir("..")
-
-
-def clear():
-    os.chdir("..")
-    shutil.rmtree("Tests")
+        shutil.rmtree("Tests")
 
 
 if __name__ == "__main__":
-    prepare()
-    gen_images()
-    #clear()
+    gen = Generator()
+    gen.prepare()
+    gen.gen_images()
+
