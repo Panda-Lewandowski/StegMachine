@@ -4,15 +4,18 @@ import os
 from math import sqrt
 from scipy import stats, mean
 import matplotlib.pyplot as plt
+import logging
 
 
 class Analyzer:
     def __init__(self, num=25, generator=Generator()):
         self.n_chunks = num
         self.generator = generator
+        logging.info('Analyzer was created.')
 
     @staticmethod
     def chi_squared_test(img):
+        #logging.info('Calculating colors for '+ img.filename +' ...')
         meas_freq_r = Analyzer.calc_colors(img, channel='r')
         meas_freq_g = Analyzer.calc_colors(img, channel='g')
         meas_freq_b = Analyzer.calc_colors(img, channel='b')
@@ -22,6 +25,7 @@ class Analyzer:
         chis = [0, 0, 0]
         probs = [0, 0, 0]
 
+        
         chis[0], probs[0] = stats.chisquare([meas_freq_r[x] for x in meas_freq_r.keys()],
                                             [theor_freq[x] for x in theor_freq.keys()])
         chis[1], probs[1] = stats.chisquare([meas_freq_g[x] for x in meas_freq_g.keys()],
@@ -29,6 +33,7 @@ class Analyzer:
         chis[2], probs[2] = stats.chisquare([meas_freq_b[x] for x in meas_freq_b.keys()],
                                             [theor_freq[x] for x in theor_freq.keys()])
 
+        
         return chis, probs
 
     @staticmethod
@@ -50,6 +55,7 @@ class Analyzer:
                     amount_dict[pix[i, j]] += 1
 
             amount_dict = {key: amount_dict[key]/(width*height) for key in amount_dict.keys()}
+        
         return amount_dict
 
     @staticmethod
@@ -61,6 +67,8 @@ class Analyzer:
         start_y = 0
         count = 1
 
+        #logging.info('Croping ' + img.filename +' ...')
+
         for i in range(y):
             for j in range(x):
                 chnk = img.crop((start_x, start_y, start_x + piece_x, start_y + piece_y))
@@ -70,32 +78,34 @@ class Analyzer:
             start_y += piece_y
             start_x = 0
 
+
     @staticmethod
     def del_n_chunks(n):
         for i in range(n):
             os.remove("chunk" + str(i + 1) + ".png")
 
-    def analyzeLSB(self):
+    def attack_chi_squared(self):
+        fig, axs = plt.subplots(1, 4, tight_layout=True)
+
+        list_of_chuncks = []
+        img = Image.open("pure.png")
+        logging.info('Calculating chi_squared for '+ img.filename +' ...')
+        Analyzer.crop_n_chunks(img, self.n_chunks)
+        for i in range(1, self.n_chunks + 1):
+            chnk = Image.open("chunk" + str(i) + ".png")
+            list_of_chuncks.append(mean(Analyzer.chi_squared_test(chnk)[0]))
+
+        Analyzer.del_n_chunks(self.n_chunks)
+        axs[0].bar([i+1 for i in range(self.n_chunks)], height=list_of_chuncks)
+        axs[0].set_title("Pure image")
+        axs[0].set_ylabel("Chi Squared")
+
         for tool in self.generator.tools:
             os.chdir(tool)
-
-            fig, axs = plt.subplots(1, 4, tight_layout=True)
-
-            list_of_chuncks = []
-            img = Image.open("pure.png")
-            Analyzer.crop_n_chunks(img, self.n_chunks)
-            for i in range(1, self.n_chunks + 1):
-                chnk = Image.open("chunk" + str(i) + ".png")
-                list_of_chuncks.append(mean(Analyzer.chi_squared_test(chnk)[0]))
-
-            Analyzer.del_n_chunks(self.n_chunks)
-            axs[0].bar([i+1 for i in range(self.n_chunks)], height=list_of_chuncks)
-            axs[0].set_title("Pure image")
-            axs[0].set_ylabel("Chi Squared")
-
             for s in self.generator.seed:
                 list_of_chuncks = []
                 img = Image.open(str(s) + ".png")
+                logging.info(tool.upper() + ': Calculating chi_squared for '+ img.filename +' ...')
                 Analyzer.crop_n_chunks(img, self.n_chunks)
                 for i in range(1, self.n_chunks + 1):
                     chnk = Image.open("chunk" + str(i) + ".png")
@@ -118,5 +128,7 @@ class Analyzer:
 if __name__ == "__main__":
     an = Analyzer()
     an.generator.prepare()
-    an.analyzeLSB()
+    an.generator.gen_images()
+    an.attack_chi_squared()
+    an.generator.clear()
 
