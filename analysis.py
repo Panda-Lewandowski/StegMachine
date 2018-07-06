@@ -20,20 +20,26 @@ class Analyzer:
         meas_freq_g = Analyzer.calc_colors(img, channel='g')
         meas_freq_b = Analyzer.calc_colors(img, channel='b')
 
-        theor_freq = {x: 1/256 for x in range(256)}
+        #theor_freq = {x: 1/256 got x in meas_freq_b.keys()}
+
+        theor_freq_r = Analyzer.calc_theor_freq(img, meas_freq_r)
+        theor_freq_g = Analyzer.calc_theor_freq(img, meas_freq_g)
+        theor_freq_b = Analyzer.calc_theor_freq(img, meas_freq_b)
 
         chis = [0, 0, 0]
         probs = [0, 0, 0]
 
-        
-        chis[0], probs[0] = stats.chisquare([meas_freq_r[x] for x in meas_freq_r.keys()],
-                                            [theor_freq[x] for x in theor_freq.keys()])
-        chis[1], probs[1] = stats.chisquare([meas_freq_g[x] for x in meas_freq_g.keys()],
-                                            [theor_freq[x] for x in theor_freq.keys()])
-        chis[2], probs[2] = stats.chisquare([meas_freq_b[x] for x in meas_freq_b.keys()],
-                                            [theor_freq[x] for x in theor_freq.keys()])
 
-        
+        print([meas_freq_r[x] for x in meas_freq_r.keys()], [theor_freq_r[x] for x in theor_freq_r.keys()])
+        a = [meas_freq_r[x] for x in meas_freq_r.keys()]
+        b =  [theor_freq_r[x] for x in theor_freq_r.keys()]
+        chis[0], probs[0] = stats.chisquare(a, b)
+        chis[1], probs[1] = stats.chisquare([meas_freq_g[x] for x in meas_freq_g.keys()],
+                                            [theor_freq_g[x] for x in theor_freq_g.keys()])
+        chis[2], probs[2] = stats.chisquare([meas_freq_b[x] for x in meas_freq_b.keys()],
+                                            [theor_freq_b[x] for x in theor_freq_b.keys()])
+
+        # print(chis, probs)      
         return chis, probs
 
     @staticmethod
@@ -54,9 +60,18 @@ class Analyzer:
                 for j in range(height):
                     amount_dict[pix[i, j]] += 1
 
-            amount_dict = {key: amount_dict[key]/(width*height) for key in amount_dict.keys()}
+            # print({key: amount_dict[key]/(width*height) for key in amount_dict.keys()})
         
         return amount_dict
+
+    @staticmethod
+    def calc_theor_freq(img, meas):
+        width, height = img.size
+        theor_freq = {}
+        for x in meas.keys():
+            theor_freq.update({x: (meas[x] + meas[x + 1]) // 2 if x & 1 == 0 else (meas[x - 1] + meas[x]) // 2 })
+        
+        return(theor_freq)
 
     @staticmethod
     def crop_n_chunks(img, n):

@@ -2,15 +2,20 @@ from PIL import Image, ImageDraw
 from stegano import lsb
 from string import ascii_letters
 import os
+import sys
 import random
 import shutil
 import logging
 import hashlib
+import cv2
+from LSBSteganography.LSBSteg import LSBSteg
+#from cloackedpixel.lsb import embed, extract
+
 
 class Generator:
     def __init__(self, tools=None, text="SUPERSECRET", seed=[i for i in range(10, 210, 10)], log_lvl=logging.INFO):
         if tools is None:
-            tools = ["Stegano"]
+            tools = ["Stegano", "LSBSteg" , "cloacked-pixel", "OpenStego"] 
         self.tools = tools
         self.text = text
         self.seed = seed
@@ -40,6 +45,51 @@ class Generator:
             sec = lsb.hide(path, msg)
             sec.save(out_path)
             decrypt = lsb.reveal(out_path)
+            
+        if tool == "OpenStego":
+            with open('msg.txt', 'w') as payload:
+                payload.write(msg)
+
+            ret_code = os.system("java -jar ../../openstego.jar embed -mf msg.txt -sf " + out_path)
+
+            os.remove('msg.txt')
+
+            if ret_code == 0:
+                ret_code = os.system("java -jar ../../openstego.jar extract -sf " + out_path + " -xd . > /dev/null")
+                if ret_code == 0:
+                    with open("msg.txt") as decrypt_file:
+                        decrypt = decrypt_file.read()
+
+        if tool == "cloacked-pixel":
+            with open('msg.txt', 'w') as payload:
+                payload.write(msg)
+
+            ret_code = os.system("python ../../cloackedpixel/lsb.py hide ../pure.png msg.txt qwerty > /dev/null")
+            if ret_code == 0:
+                os.chdir("..")
+                os.rename("pure.png-stego.png", out_path) 
+                shutil.move(out_path, "cloacked-pixel/")
+                os.chdir("cloacked-pixel/")
+                ret_code = os.system("python ../../cloackedpixel/lsb.py extract " + os.path.abspath(out_path) + " out.txt qwerty > /dev/null")
+                if ret_code == 0:
+                    with open("out.txt") as decrypt_file:
+                        decrypt = decrypt_file.read()
+                else:
+                    raise Exception("Extacting error!")
+            else:
+                raise Exception("Hiding error!")
+
+            os.remove('msg.txt')
+            os.remove('out.txt')
+
+        if tool == "LSBSteg":
+            steg = LSBSteg(cv2.imread("../pure.png"))
+            img_encoded = steg.encode_text(msg)
+            cv2.imwrite(out_path, img_encoded)
+
+            im = cv2.imread(out_path)
+            steg = LSBSteg(im)
+            decrypt = steg.decode_text()
 
         if decrypt != msg:
             logging.error("Extraction error with " + out_path)
@@ -56,11 +106,11 @@ class Generator:
 
     def gen_images(self):
         color = (0, 0, 120)
-        img = Image.new('RGB', (90, 90), color)
+        img = Image.new('RGB', (900, 900), color)
         img_drawer = ImageDraw.Draw(img)
 
-        img_drawer.text((10, 10), self.text)
-        img_drawer.text((20, 60), self.text)
+        # img_drawer.text((10, 10), self.text)
+        # img_drawer.text((20, 60), self.text)
         img.save("pure.png")
 
         with open("pure.png", 'rb') as pure:
@@ -77,7 +127,7 @@ class Generator:
             
             for s in self.seed:
                 random.seed(s)
-                msg = self.get_random_word(s * 10)
+                msg = self.get_random_word(s)
                 self.hide_n_check("../pure.png", msg, tool, s, md5_hash)
                 logging.info(tool.upper() + ": Hinding secret random text with seed " + str(s) + "...")
             os.chdir("..")
@@ -92,4 +142,4 @@ if __name__ == "__main__":
     gen = Generator()
     gen.prepare()
     gen.gen_images()
-    gen.clear()
+    #   gen.clear()
