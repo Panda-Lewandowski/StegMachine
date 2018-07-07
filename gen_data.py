@@ -16,7 +16,11 @@ from LSBSteganography.LSBSteg import LSBSteg
 class Generator:
     def __init__(self, tools=None, text="SUPERSECRET", seed=[i for i in range(10, 210, 10)], log_lvl=logging.INFO):
         if tools is None:
-            tools = ["Stegano", "LSBSteg" , "cloacked-pixel", "OpenStego"] 
+            # tools = ["Stegano", "LSBSteg" , "cloacked-pixel", "OpenStego"]
+            tools = ["Stegano"]
+            # tools = ["LSBSteg"]
+            # tools = ["cloacked-pixel"]
+            # tools = ["OpenStego"]
         self.tools = tools
         self.text = text
         self.seed = seed
@@ -51,12 +55,12 @@ class Generator:
             with open('msg.txt', 'w') as payload:
                 payload.write(msg)
 
-            ret_code = os.system("java -jar ../../openstego.jar embed -mf msg.txt -sf " + out_path)
+            ret_code = os.system("java -jar ../../../openstego.jar embed -mf msg.txt -sf " + out_path)
 
             os.remove('msg.txt')
 
             if ret_code == 0:
-                ret_code = os.system("java -jar ../../openstego.jar extract -sf " + out_path + " -xd . > /dev/null")
+                ret_code = os.system("java -jar ../../../openstego.jar extract -sf " + out_path + " -xd . > /dev/null")
                 if ret_code == 0:
                     with open("msg.txt") as decrypt_file:
                         decrypt = decrypt_file.read()
@@ -65,13 +69,13 @@ class Generator:
             with open('msg.txt', 'w') as payload:
                 payload.write(msg)
 
-            ret_code = os.system("python ../../cloackedpixel/lsb.py hide ../pure.png msg.txt qwerty > /dev/null")
+            ret_code = os.system("python ../../../cloackedpixel/lsb.py hide ../pure.png msg.txt qwerty > /dev/null")
             if ret_code == 0:
                 os.chdir("..")
                 os.rename("pure.png-stego.png", out_path) 
                 shutil.move(out_path, "cloacked-pixel/")
                 os.chdir("cloacked-pixel/")
-                ret_code = os.system("python ../../cloackedpixel/lsb.py extract " + os.path.abspath(out_path) + " out.txt qwerty > /dev/null")
+                ret_code = os.system("python ../../../cloackedpixel/lsb.py extract " + os.path.abspath(out_path) + " out.txt qwerty > /dev/null")
                 if ret_code == 0:
                     with open("out.txt") as decrypt_file:
                         decrypt = decrypt_file.read()
@@ -105,15 +109,29 @@ class Generator:
                 raise Exception("MD5 hash error!")
         logging.info("Checking " + out_path + "... OK!")
 
-    def gen_images(self):
-        # random.seed()
-        # color = (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255))
-        # img = Image.new('RGB', (900, 900), color)
+    def generate_images(self, mode="single"):
+        if mode == "single":
+            logging.info("Generate single color imeges...")
+            os.mkdir(path="SingleColor/")
+            os.chdir("SingleColor")
+            random.seed()
+            color = (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255))
+            img = Image.new('RGB', (900, 900), color)
 
-        a = numpy.random.rand(900,900,3) * 255
-        img = Image.fromarray(a.astype('uint8')).convert('RGBA')
+        if mode == "random":
+            logging.info("Generate random color imeges...")
+            os.mkdir(path="RandomColor/")
+            os.chdir("RandomColor")
+            a = numpy.random.rand(900,900,3) * 255
+            img = Image.fromarray(a.astype('uint8')).convert('RGBA')
+
+        if mode == "real":
+            logging.info("Generate real imeges...")
+            img = Image.open("../test.png")
+            os.mkdir(path="RealColor/")
+            os.chdir("RealColor")
+
         img_drawer = ImageDraw.Draw(img)
-
         img.save("pure.png")
 
         with open("pure.png", 'rb') as pure:
@@ -134,6 +152,7 @@ class Generator:
                 self.hide_n_check("../pure.png", msg, tool, s, md5_hash)
                 logging.info(tool.upper() + ": Hinding secret random text with seed " + str(s) + "...")
             os.chdir("..")
+        os.chdir("..")
 
     def clear(self):
         logging.info("Clearing  all test files...")
@@ -144,5 +163,7 @@ class Generator:
 if __name__ == "__main__":
     gen = Generator()
     gen.prepare()
-    gen.gen_images()
+    gen.generate_images()
+    gen.generate_images(mode="random")
+    gen.generate_images(mode="real")
     #   gen.clear()

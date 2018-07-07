@@ -33,7 +33,7 @@ class Analyzer:
         chis[1], probs[1] = stats.chisquare(observed_freq_g, expected_freq_g)
         chis[2], probs[2] = stats.chisquare(observed_freq_b, expected_freq_b)
 
-        print(chis, probs)      
+        # print(chis, probs)      
         return chis, probs
 
     @staticmethod
@@ -89,11 +89,18 @@ class Analyzer:
         for i in range(n):
             os.remove("chunk" + str(i + 1) + ".png")
 
-    def attack_chi_squared(self):
+    def attack_chi_squared(self, mode="single"):
         fig, axs = plt.subplots(1, 4, tight_layout=True)
 
         list_of_chuncks = []
         os.chdir("Tests/")
+        if mode == "single":
+            os.chdir("SingleColor/")
+        if mode == "random":
+            os.chdir("RandomColor/") 
+        if mode == "real":
+            os.chdir("RealColor/")
+
         img = Image.open("pure.png")
         logging.info('Calculating chi_squared for '+ img.filename +' ...')
         Analyzer.crop_n_chunks(img, self.n_chunks)
@@ -135,6 +142,6 @@ if __name__ == "__main__":
     an = Analyzer()
     # an.generator.prepare()
     # an.generator.gen_images()
-    an.attack_chi_squared()
+    an.attack_chi_squared(mode="real")
     # an.generator.clear()
 
