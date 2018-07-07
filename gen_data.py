@@ -105,12 +105,11 @@ class Generator:
         logging.info("Checking " + out_path + "... OK!")
 
     def gen_images(self):
-        color = (0, 0, 120)
+        random.seed()
+        color = (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255))
         img = Image.new('RGB', (900, 900), color)
         img_drawer = ImageDraw.Draw(img)
 
-        # img_drawer.text((10, 10), self.text)
-        # img_drawer.text((20, 60), self.text)
         img.save("pure.png")
 
         with open("pure.png", 'rb') as pure:

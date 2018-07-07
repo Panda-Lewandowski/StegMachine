@@ -30,7 +30,7 @@ class Analyzer:
         probs = [0, 0, 0]
 
 
-        print([meas_freq_r[x] for x in meas_freq_r.keys()], [theor_freq_r[x] for x in theor_freq_r.keys()])
+        # print([meas_freq_r[x] for x in meas_freq_r.keys()], [theor_freq_r[x] for x in theor_freq_r.keys()])
         a = [meas_freq_r[x] for x in meas_freq_r.keys()]
         b =  [theor_freq_r[x] for x in theor_freq_r.keys()]
         chis[0], probs[0] = stats.chisquare(a, b)
@@ -56,6 +56,7 @@ class Analyzer:
             ch = None
         if ch:
             pix = ch.load()
+            print(ch.histogram())
             for i in range(width):
                 for j in range(height):
                     amount_dict[pix[i, j]] += 1
@@ -103,6 +104,7 @@ class Analyzer:
         fig, axs = plt.subplots(1, 4, tight_layout=True)
 
         list_of_chuncks = []
+        os.chdir("Tests/")
         img = Image.open("pure.png")
         logging.info('Calculating chi_squared for '+ img.filename +' ...')
         Analyzer.crop_n_chunks(img, self.n_chunks)
@@ -142,8 +144,8 @@ class Analyzer:
 
 if __name__ == "__main__":
     an = Analyzer()
-    an.generator.prepare()
-    an.generator.gen_images()
+    # an.generator.prepare()
+    # an.generator.gen_images()
     an.attack_chi_squared()
-    an.generator.clear()
+    # an.generator.clear()
 
