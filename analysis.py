@@ -16,36 +16,29 @@ class Analyzer:
     @staticmethod
     def chi_squared_test(img):
         #logging.info('Calculating colors for '+ img.filename +' ...')
-        meas_freq_r = Analyzer.calc_colors(img, channel='r')
-        meas_freq_g = Analyzer.calc_colors(img, channel='g')
-        meas_freq_b = Analyzer.calc_colors(img, channel='b')
+        hist_r = Analyzer.calc_colors(img, channel='r')
+        hist_g = Analyzer.calc_colors(img, channel='g')
+        hist_b = Analyzer.calc_colors(img, channel='b')
 
-        #theor_freq = {x: 1/256 got x in meas_freq_b.keys()}
+        #expected_freq = {x: 1/256 got x in observed_freq_b.keys()}
 
-        theor_freq_r = Analyzer.calc_theor_freq(img, meas_freq_r)
-        theor_freq_g = Analyzer.calc_theor_freq(img, meas_freq_g)
-        theor_freq_b = Analyzer.calc_theor_freq(img, meas_freq_b)
+        expected_freq_r, observed_freq_r = Analyzer.calc_freq(hist_r)
+        expected_freq_g, observed_freq_g = Analyzer.calc_freq(hist_g)
+        expected_freq_b, observed_freq_b = Analyzer.calc_freq(hist_b)
 
         chis = [0, 0, 0]
         probs = [0, 0, 0]
 
+        chis[0], probs[0] = stats.chisquare(observed_freq_r, expected_freq_r)
+        chis[1], probs[1] = stats.chisquare(observed_freq_g, expected_freq_g)
+        chis[2], probs[2] = stats.chisquare(observed_freq_b, expected_freq_b)
 
-        # print([meas_freq_r[x] for x in meas_freq_r.keys()], [theor_freq_r[x] for x in theor_freq_r.keys()])
-        a = [meas_freq_r[x] for x in meas_freq_r.keys()]
-        b =  [theor_freq_r[x] for x in theor_freq_r.keys()]
-        chis[0], probs[0] = stats.chisquare(a, b)
-        chis[1], probs[1] = stats.chisquare([meas_freq_g[x] for x in meas_freq_g.keys()],
-                                            [theor_freq_g[x] for x in theor_freq_g.keys()])
-        chis[2], probs[2] = stats.chisquare([meas_freq_b[x] for x in meas_freq_b.keys()],
-                                            [theor_freq_b[x] for x in theor_freq_b.keys()])
-
-        # print(chis, probs)      
+        print(chis, probs)      
         return chis, probs
 
     @staticmethod
     def calc_colors(img, channel='r'):
         width, height = img.size
-        amount_dict = {x: 0 for x in range(256)}
         if channel == 'r':
             ch = img.split()[0]
         elif channel == 'g':
@@ -55,24 +48,20 @@ class Analyzer:
         else:
             ch = None
         if ch:
-            pix = ch.load()
-            print(ch.histogram())
-            for i in range(width):
-                for j in range(height):
-                    amount_dict[pix[i, j]] += 1
-
-            # print({key: amount_dict[key]/(width*height) for key in amount_dict.keys()})
+            hist = ch.histogram()
         
-        return amount_dict
+        return hist
 
     @staticmethod
-    def calc_theor_freq(img, meas):
-        width, height = img.size
-        theor_freq = {}
-        for x in meas.keys():
-            theor_freq.update({x: (meas[x] + meas[x + 1]) // 2 if x & 1 == 0 else (meas[x - 1] + meas[x]) // 2 })
-        
-        return(theor_freq)
+    def calc_freq(histogram):
+        expected = []
+        observed = []
+        for k in range(0, len(histogram) // 2):
+            expected.append(((histogram[2 * k] + histogram[2 * k + 1]) // 2))
+            observed.append(histogram[2 * k])
+
+        return expected, observed
+
 
     @staticmethod
     def crop_n_chunks(img, n):

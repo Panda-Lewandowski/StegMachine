@@ -7,7 +7,8 @@ import random
 import shutil
 import logging
 import hashlib
-import cv2
+import cv2        
+import numpy
 from LSBSteganography.LSBSteg import LSBSteg
 #from cloackedpixel.lsb import embed, extract
 
@@ -105,9 +106,12 @@ class Generator:
         logging.info("Checking " + out_path + "... OK!")
 
     def gen_images(self):
-        random.seed()
-        color = (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255))
-        img = Image.new('RGB', (900, 900), color)
+        # random.seed()
+        # color = (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255))
+        # img = Image.new('RGB', (900, 900), color)
+
+        a = numpy.random.rand(900,900,3) * 255
+        img = Image.fromarray(a.astype('uint8')).convert('RGBA')
         img_drawer = ImageDraw.Draw(img)
 
         img.save("pure.png")
