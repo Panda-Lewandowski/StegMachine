@@ -1,10 +1,12 @@
 from gen_data import Generator
 from PIL import Image
+from PIL.ExifTags import TAGS
 import os
 from math import sqrt
 from scipy import stats, mean
 import matplotlib.pyplot as plt
 import logging
+from chi_square import chi_squared_test
 
 
 class Analyzer:
@@ -12,56 +14,6 @@ class Analyzer:
         self.n_chunks = num
         self.generator = generator
         logging.info('Analyzer was created.')
-
-    @staticmethod
-    def chi_squared_test(img):
-        #logging.info('Calculating colors for '+ img.filename +' ...')
-        hist_r = Analyzer.calc_colors(img, channel='r')
-        hist_g = Analyzer.calc_colors(img, channel='g')
-        hist_b = Analyzer.calc_colors(img, channel='b')
-
-        #expected_freq = {x: 1/256 got x in observed_freq_b.keys()}
-
-        expected_freq_r, observed_freq_r = Analyzer.calc_freq(hist_r)
-        expected_freq_g, observed_freq_g = Analyzer.calc_freq(hist_g)
-        expected_freq_b, observed_freq_b = Analyzer.calc_freq(hist_b)
-
-        chis = [0, 0, 0]
-        probs = [0, 0, 0]
-
-        chis[0], probs[0] = stats.chisquare(observed_freq_r, expected_freq_r)
-        chis[1], probs[1] = stats.chisquare(observed_freq_g, expected_freq_g)
-        chis[2], probs[2] = stats.chisquare(observed_freq_b, expected_freq_b)
-
-        # print(chis, probs)      
-        return chis, probs
-
-    @staticmethod
-    def calc_colors(img, channel='r'):
-        width, height = img.size
-        if channel == 'r':
-            ch = img.split()[0]
-        elif channel == 'g':
-            ch = img.split()[1]
-        elif channel == 'b':
-            ch = img.split()[2]
-        else:
-            ch = None
-        if ch:
-            hist = ch.histogram()
-        
-        return hist
-
-    @staticmethod
-    def calc_freq(histogram):
-        expected = []
-        observed = []
-        for k in range(0, len(histogram) // 2):
-            expected.append(((histogram[2 * k] + histogram[2 * k + 1]) // 2))
-            observed.append(histogram[2 * k])
-
-        return expected, observed
-
 
     @staticmethod
     def crop_n_chunks(img, n):
@@ -83,11 +35,17 @@ class Analyzer:
             start_y += piece_y
             start_x = 0
 
-
     @staticmethod
     def del_n_chunks(n):
         for i in range(n):
             os.remove("chunk" + str(i + 1) + ".png")
+
+    def exif(self, img):
+        try:
+            exif = { TAGS[k]: v for k, v in img._getexif().items() if k in TAGS }
+            return exif
+        except AttributeError:
+            return {}
 
     def attack_chi_squared(self, mode="single"):
         fig, axs = plt.subplots(1, 4, tight_layout=True)
@@ -106,7 +64,7 @@ class Analyzer:
         Analyzer.crop_n_chunks(img, self.n_chunks)
         for i in range(1, self.n_chunks + 1):
             chnk = Image.open("chunk" + str(i) + ".png")
-            list_of_chuncks.append(mean(Analyzer.chi_squared_test(chnk)[0]))
+            list_of_chuncks.append(mean(chi_squared_test(chnk)[0]))
 
         Analyzer.del_n_chunks(self.n_chunks)
         axs[0].bar([i+1 for i in range(self.n_chunks)], height=list_of_chuncks)
@@ -122,7 +80,7 @@ class Analyzer:
                 Analyzer.crop_n_chunks(img, self.n_chunks)
                 for i in range(1, self.n_chunks + 1):
                     chnk = Image.open("chunk" + str(i) + ".png")
-                    list_of_chuncks.append(mean(Analyzer.chi_squared_test(chnk)[0]))
+                    list_of_chuncks.append(mean(chi_squared_test(chnk)[0]))
                 if s == 10:
                     axs[1].set_title('Seed 10')
                     axs[1].bar([i + 1 for i in range(self.n_chunks)], height=list_of_chuncks)
