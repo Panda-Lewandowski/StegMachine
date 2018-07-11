@@ -14,10 +14,10 @@ from LSBSteganography.LSBSteg import LSBSteg
 
 
 class Generator:
-    def __init__(self, tools=None, text="SUPERSECRET", seed=[i for i in range(10, 210, 10)], log_lvl=logging.INFO):
+    def __init__(self, tools=None, text="SUPERSECRET", seed=[i for i in range(10, 110, 10)], log_lvl=logging.INFO):
         if tools is None:
-            # tools = ["Stegano", "LSBSteg" , "cloacked-pixel", "OpenStego"]
-            tools = ["Stegano"]
+            tools = ["Stegano",  "cloacked-pixel", "OpenStego"]
+            # tools = ["Stegano"]
             # tools = ["LSBSteg"]
             # tools = ["cloacked-pixel"]
             # tools = ["OpenStego"]
@@ -27,7 +27,7 @@ class Generator:
         logging.basicConfig(format='%(levelname)-8s [%(asctime)s] %(message)s', level=log_lvl)
         logging.info('Generator was created.')
 
-    def get_random_word(self, length):   # instead of os.urandom(5)
+    def get_random_word(self, length):
         return ''.join(random.choice(ascii_letters) for i in range(length))
 
     def prepare(self, ):
@@ -57,25 +57,25 @@ class Generator:
 
             ret_code = os.system("java -jar ../../../openstego.jar embed -mf msg.txt -sf " + out_path)
 
-            os.remove('msg.txt')
-
             if ret_code == 0:
                 ret_code = os.system("java -jar ../../../openstego.jar extract -sf " + out_path + " -xd . > /dev/null")
                 if ret_code == 0:
                     with open("msg.txt") as decrypt_file:
                         decrypt = decrypt_file.read()
+                        
+            os.remove('msg.txt')
 
         if tool == "cloacked-pixel":
             with open('msg.txt', 'w') as payload:
                 payload.write(msg)
 
-            ret_code = os.system("python ../../../cloackedpixel/lsb.py hide ../pure.png msg.txt qwerty > /dev/null")
+            ret_code = os.system("python ../../../cloackedpixel/lsb.py hide ../pure.png msg.txt qwerty")    #> /dev/null")
             if ret_code == 0:
                 os.chdir("..")
                 os.rename("pure.png-stego.png", out_path) 
                 shutil.move(out_path, "cloacked-pixel/")
                 os.chdir("cloacked-pixel/")
-                ret_code = os.system("python ../../../cloackedpixel/lsb.py extract " + os.path.abspath(out_path) + " out.txt qwerty > /dev/null")
+                ret_code = os.system("python ../../../cloackedpixel/lsb.py extract " + os.path.abspath(out_path) + " out.txt qwerty") #> /dev/null")
                 if ret_code == 0:
                     with open("out.txt") as decrypt_file:
                         decrypt = decrypt_file.read()
@@ -109,20 +109,20 @@ class Generator:
                 raise Exception("MD5 hash error!")
         logging.info("Checking " + out_path + "... OK!")
 
-    def generate_images(self, mode="single"):
+    def generate_images(self, height, width, mode="single"):
         if mode == "single":
             logging.info("Generate single color imeges...")
             os.mkdir(path="SingleColor/")
             os.chdir("SingleColor")
             random.seed()
             color = (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255))
-            img = Image.new('RGB', (900, 900), color)
+            img = Image.new('RGB', (height, width), color)
 
         if mode == "random":
             logging.info("Generate random color imeges...")
             os.mkdir(path="RandomColor/")
             os.chdir("RandomColor")
-            a = numpy.random.rand(900,900,3) * 255
+            a = numpy.random.rand(height, width,3) * 255
             img = Image.fromarray(a.astype('uint8')).convert('RGBA')
 
         if mode == "real":
@@ -148,7 +148,7 @@ class Generator:
             
             for s in self.seed:
                 random.seed(s)
-                msg = self.get_random_word(s)
+                msg = self.get_random_word(s * height * width // 275)
                 self.hide_n_check("../pure.png", msg, tool, s, md5_hash)
                 logging.info(tool.upper() + ": Hinding secret random text with seed " + str(s) + "...")
             os.chdir("..")
@@ -162,8 +162,8 @@ class Generator:
 
 if __name__ == "__main__":
     gen = Generator()
-    gen.prepare()
-    gen.generate_images()
-    gen.generate_images(mode="random")
-    gen.generate_images(mode="real")
+    # gen.prepare()
+    gen.generate_images(900, 900)
+    gen.generate_images(900, 900, mode="random")
+    gen.generate_images(900, 900, mode="real")
     #   gen.clear()
