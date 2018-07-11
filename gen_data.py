@@ -36,7 +36,7 @@ class Generator:
             os.mkdir(path=path)
             logging.info('Creating "Tests"...')
         except FileExistsError:
-            logging.warning('Folder "Tests" was created before. Its contents will be cleared!')
+            logging.warning('Folder "Tests" was created before. Its contents will be cleared!❗️')
             shutil.rmtree(path)
             os.mkdir(path=path)
         os.chdir(path)
@@ -80,9 +80,9 @@ class Generator:
                     with open("out.txt") as decrypt_file:
                         decrypt = decrypt_file.read()
                 else:
-                    raise Exception("Extacting error!")
+                    raise Exception("Extacting error!❌")
             else:
-                raise Exception("Hiding error!")
+                raise Exception("Hiding error!❌")
 
             os.remove('msg.txt')
             os.remove('out.txt')
@@ -98,7 +98,7 @@ class Generator:
 
         if decrypt != msg:
             logging.error("Extraction error with " + out_path)
-            raise Exception("Extraction error!")
+            raise Exception("Extraction error!❌")
 
         with open(out_path, 'rb') as hiden:
             data = hiden.read()
@@ -106,12 +106,12 @@ class Generator:
 
             if md5_hash == pure_hash:
                 logging.error("MD5 hash error with " + out_path + ". Hashes match")
-                raise Exception("MD5 hash error!")
-        logging.info("Checking " + out_path + "... OK!")
+                raise Exception("MD5 hash error!❌")
+        logging.info("Checking " + out_path + "... OK!✅")
 
     def generate_images(self, height, width, mode="single"):
         if mode == "single":
-            logging.info("Generate single color imeges...")
+            logging.info("Generate single color imeges...🌀")
             os.mkdir(path="SingleColor/")
             os.chdir("SingleColor")
             random.seed()
@@ -119,14 +119,14 @@ class Generator:
             img = Image.new('RGB', (height, width), color)
 
         if mode == "random":
-            logging.info("Generate random color imeges...")
+            logging.info("Generate random color imeges...🌀")
             os.mkdir(path="RandomColor/")
             os.chdir("RandomColor")
             a = numpy.random.rand(height, width,3) * 255
             img = Image.fromarray(a.astype('uint8')).convert('RGBA')
 
         if mode == "real":
-            logging.info("Generate real imeges...")
+            logging.info("Generate real imeges...🌀")
             img = Image.open("../test.png")
             os.mkdir(path="RealColor/")
             os.chdir("RealColor")
@@ -142,7 +142,7 @@ class Generator:
             try:
                 os.mkdir(tool)
             except FileExistsError:
-                logging.warning("Folder '"+ tool + "' was already exist.")
+                logging.warning("Folder '"+ tool + "' was already exist.❗️")
             os.chdir(tool)
             logging.info("Working with " + tool.upper() + "...")
             
@@ -155,7 +155,7 @@ class Generator:
         os.chdir("..")
 
     def clear(self):
-        logging.info("Clearing  all test files...")
+        logging.info("Clearing  all test files...🌀")
         os.chdir("..")
         shutil.rmtree("Tests")
 

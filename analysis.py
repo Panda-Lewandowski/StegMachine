@@ -10,9 +10,18 @@ from methods.chi_square import chi_squared_test
 
 
 class Analyzer:
-    def __init__(self, generator=Generator()):
-        self.generator = generator
+    def __init__(self, log_lvl=logging.INFO):
+        logging.basicConfig(format='%(levelname)-8s [%(asctime)s] %(message)s', level=log_lvl)
         logging.info('Analyzer was created.')
+
+    def check_tests(self):
+        try:
+            os.chdir("Tests/")
+        except FileNotFoundError:
+            logging.error("Please, generate test sample or rename it to 'Tests'!❗️")
+        else:
+            os.chdir('..')
+            logging.info("Everything is fine with the test folder.✅")
 
     def exif(self, img):
         try:
@@ -22,9 +31,6 @@ class Analyzer:
             return {}
 
     def attack_chi_squared(self, mode="single"):
-        fig, axs = plt.subplots(1, 4, tight_layout=True)
-
-        list_of_chuncks = []
         os.chdir("Tests/")
         if mode == "single":
             os.chdir("SingleColor/")
@@ -34,7 +40,7 @@ class Analyzer:
             os.chdir("RealColor/")
 
         img = Image.open("pure.png")
-        logging.info('Calculating chi_squared for '+ img.filename +' ...')
+        logging.info('Calculating chi_squared for '+ img.filename +' ...🌀')
         # for i in range(1, self.n_chunks + 1):
         #     chnk = Image.open("chunk" + str(i) + ".png")
         #     list_of_chuncks.append(mean(chi_squared_test(chnk)[0]))
@@ -71,8 +77,7 @@ class Analyzer:
 
 if __name__ == "__main__":
     an = Analyzer()
-    # an.generator.prepare()
-    # an.generator.gen_images()
-    an.attack_chi_squared(mode="real")
+    an.check_tests()
+    # an.attack_chi_squared(mode="real")
     # an.generator.clear()
 
