@@ -2,11 +2,9 @@ from gen_data import Generator
 from PIL import Image
 from PIL.ExifTags import TAGS
 import os
-from math import sqrt
-from scipy import stats, mean
-import matplotlib.pyplot as plt
 import logging
 from methods.chi_square import chi_squared_test
+import numpy as np
 
 
 class Analyzer:
@@ -30,16 +28,46 @@ class Analyzer:
         except AttributeError:
             return {}
 
-    def attack_chi_squared(self, mode="single"):
-        os.chdir("Tests/")
-        if mode == "single":
-            os.chdir("SingleColor/")
-        if mode == "random":
-            os.chdir("RandomColor/") 
-        if mode == "real":
-            os.chdir("RealColor/")
+    def visual_attack(self, img):
+        logging.info('Visualising lsb for '+ img.filename +' ...🌀')
+        height, width = img.size
 
-        img = Image.open("pure.png")
+        r, g, b = img.split()
+
+        channel = r.load()
+        img_r = Image.new("RGB", (height, width), color=(0, 0, 0))
+
+        for i in range(height):
+            for j in range(width):
+                bit = int((bin(channel[i, j]))[-1])
+                if bit == 1:
+                    img_r.putpixel((i, j), 255)
+
+        img_r.save("red-" + img.filename.split(".")[0] + ".bmp")
+
+        channel = g.load()
+        img_g = Image.new("RGB", (height, width), color=(0, 255, 0))
+
+        for i in range(height):
+            for j in range(width):
+                bit = int((bin(channel[i, j]))[-1])
+                if bit == 1:
+                    img_g.putpixel((i, j), 0)
+
+        img_g.save("green-" + img.filename.split(".")[0] + ".bmp")
+
+        channel = b.load()
+        img_b = Image.new("RGB", (height, width), color=(0, 0, 255))
+
+        for i in range(height):
+            for j in range(width):
+                bit = int((bin(channel[i, j]))[-1])
+                if bit == 1:
+                    img_b.putpixel((i, j), 0)
+
+        img_b.save("blue-" + img.filename.split(".")[0] + ".bmp")                
+
+    def attack_chi_squared(self, img):
         logging.info('Calculating chi_squared for '+ img.filename +' ...🌀')
         # for i in range(1, self.n_chunks + 1):
         #     chnk = Image.open("chunk" + str(i) + ".png")
@@ -77,7 +105,9 @@ class Analyzer:
 
 if __name__ == "__main__":
     an = Analyzer()
-    an.check_tests()
+    # an.check_tests()
+    an.visual_attack(Image.open("70.png"))
+    an.visual_attack(Image.open("pure.png"))
     # an.attack_chi_squared(mode="real")
     # an.generator.clear()
 
