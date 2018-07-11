@@ -6,7 +6,7 @@ from math import sqrt
 from scipy import stats, mean
 import matplotlib.pyplot as plt
 import logging
-from chi_square import chi_squared_test
+from methods.chi_square import chi_squared_test
 
 
 class Analyzer:
