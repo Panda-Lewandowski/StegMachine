@@ -12,6 +12,7 @@ def usage(prog_name):
         {0} visual -b <n> <path to image file>
         {0} chi <path to image file>
         {0} spa <path to image file>
+        {0} rs <path to image file>
         {0} generate 
         {0} help
     """.format(prog_name))
@@ -26,7 +27,8 @@ def help(prog_name):
     \t🔹visual <params> <path to image file>    module for visual attack
     \t       -b <n>        the number of lsb in which the message is embed  \n
     \t🔹chi <path to image file>                module for chi-squared attack \n
-    \t🔹spa <path to image file>                module fir sample pair attack \n
+    \t🔹spa <path to image file>                module for sample pair attack \n
+    \t🔹rs <path to image file>                 module for rs-method attack \n
     \t🔹generate                                genenrate data set with specified tools\n
     \t🔹help                                    hint output\n
     """.format(prog_name))
@@ -50,6 +52,8 @@ if __name__ == "__main__":
             an.chi_squared_attack(Image.open(sys.argv[2]))
         elif sys.argv[1] == "spa":
             an.spa_attack(Image.open(sys.argv[2]))
+        elif sys.argv[1] == "rs":
+            an.rs_attack(Image.open(sys.argv[2]))
         else:
             usage(sys.argv[0])
             logging.info("Invalid operation specified! ❌")

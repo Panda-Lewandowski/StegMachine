@@ -3,6 +3,8 @@ from PIL.ExifTags import TAGS
 import os
 import logging
 from methods.chi_square import chi_squared_test
+from methods.sample_pairs import spa_test
+from methods.rs import rs_test
 import numpy as np
 
 
@@ -84,7 +86,14 @@ class Analyzer:
 
     def spa_attack(self, img):
         logging.info("Calculating spa beta for " + img.filename +' ...🌀')
+        estimate = spa_test(img)
+        logging.info("SPA estimate for "+ img.filename + " is " + str(estimate))
 
+    def rs_attack(self, img):
+        logging.info("Calculating rs estimate for " + img.filename +' ...🌀')
+        logging.info("It will take a couple of minutes...")
+        estimate = rs_test(img)
+        logging.info("RS estimate for "+ img.filename + " is " + str(estimate))
 
 if __name__ == "__main__":
     an = Analyzer()

@@ -120,7 +120,7 @@ class Generator:
             os.mkdir(path="RandomColor/")
             os.chdir("RandomColor")
             a = numpy.random.rand(height, width,3) * 255
-            img = Image.fromarray(a.astype('uint8')).convert('RGBA')
+            img = Image.fromarray(a.astype('uint8')).convert('RGB')
 
         if mode == "real":
             logging.info("Generate real imeges...🌀")
