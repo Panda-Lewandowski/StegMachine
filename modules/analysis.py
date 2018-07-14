@@ -51,10 +51,36 @@ class Analyzer:
             name = suffixes[k] + "-" + img.filename.split(".")[0] + ".bmp"
             img_ch.save(name)
             logging.info("Openning " + suffixes[k] + " component...🌀")
-            os.system("open " + name)
+            # os.system("open " + name)
+            img_ch.show()
 
     def chi_squared_attack(self, img):
         logging.info('Calculating chi_squared for '+ img.filename +' ...🌀')
+        eps = 1e-5
+        channels = img.split()
+        height, width = img.size
+
+        img_to_blend = Image.new("RGB", (height, width), color=(0, 0, 0))
+    
+        for i in range(height):
+            prob = 0
+            for ch in channels:
+                data = ch.crop((0, i, width, i+1))
+                prob += chi_squared_test(data)[1]
+            prob /= 3
+            if 0.5 - eps < prob < 0.5 + eps:
+                for j in range(width):
+                    img_to_blend.putpixel((j, i), (209, 167, 27))
+            elif prob < 0.5 - eps:
+                for j in range(width):
+                    img_to_blend.putpixel((j, i), (112, 209, 27))
+            elif prob > 0.5 + eps:
+                for j in range(width):
+                    img_to_blend.putpixel((j, i), (255, 0, 0))
+
+        result = Image.blend(img, img_to_blend, 0.5)
+        result.save("chi-" + img.filename)
+        result.show()
 
     def spa_attack(self, img):
         logging.info("Calculating spa beta for " + img.filename +' ...🌀')

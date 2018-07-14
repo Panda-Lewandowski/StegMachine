@@ -29,7 +29,7 @@ def help(prog_name):
     \t🔹spa <path to image file>                module fir sample pair attack \n
     \t🔹generate                                genenrate data set with specified tools\n
     \t🔹help                                    hint output\n
-    """)
+    """.format(prog_name))
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
