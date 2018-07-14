@@ -11,16 +11,13 @@ import cv2
 import numpy
 from LSBSteganography.LSBSteg import LSBSteg
 #from cloackedpixel.lsb import embed, extract
+from settings import full_spectrum_tools
 
 
 class Generator:
     def __init__(self, tools=None, text="SUPERSECRET", seed=[i for i in range(10, 110, 10)], log_lvl=logging.INFO):
         if tools is None:
-            tools = ["Stegano",  "cloacked-pixel", "OpenStego"]
-            # tools = ["Stegano"]
-            # tools = ["LSBSteg"]
-            # tools = ["cloacked-pixel"]
-            # tools = ["OpenStego"]
+            tools = full_spectrum_tools
         self.tools = tools
         self.text = text
         self.seed = seed
