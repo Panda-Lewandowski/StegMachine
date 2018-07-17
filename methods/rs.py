@@ -1,301 +1,132 @@
 from PIL import Image
-from math import sqrt
+from math import floor, sqrt
 
-
-
-def rs_test(img, m=2, n=2):
+def rs_test(img, bw=2, bh=2, mask=[1, 0, 0, 1]):
     height, width = img.size
 
-    mask = [[], []]
+    invert_mask = list(map(lambda x: -x, mask))
 
-    for i in range(n):
-        for j in range(m):
-            if ((j % 2) == 0 and (i % 2) == 0) or ((j % 2) == 1 and (i % 2) == 1):
-                mask[0].append(1)
-                mask[1].append(0)
-            else:
-                mask[0].append(0)
-                mask[1].append(1)
-
-    mask_size_x = m
-    mask_size_y = n
-
+    blocks_in_row = floor(width / bw)
+    blocks_in_col = floor(height / bh)
     r, g, b = img.split()
+    r = r.load()
+    g = g.load()
+    b = b.load() 
 
-    average_overlapping_value = (analyze(r.load(), True, mask, mask_size_x, mask_size_y, height, width) + \
-                                 analyze(g.load(), True, mask, mask_size_x, mask_size_y, height, width) + \
-                                 analyze(b.load(), True, mask, mask_size_x, mask_size_y, height, width)) / 3
+    group_couters = [
+		{'R': 0, 'S': 0, 'U': 0, 'mR': 0, 'mS': 0, 'mU': 0, 'iR': 0, 'iS': 0, 'iU': 0, 'imR': 0, 'imS': 0, 'imU': 0},
+		{'R': 0, 'S': 0, 'U': 0, 'mR': 0, 'mS': 0, 'mU': 0, 'iR': 0, 'iS': 0, 'iU': 0, 'imR': 0, 'imS': 0, 'imU': 0},
+		{'R': 0, 'S': 0, 'U': 0, 'mR': 0, 'mS': 0, 'mU': 0, 'iR': 0, 'iS': 0, 'iU': 0, 'imR': 0, 'imS': 0, 'imU': 0}]
 
-    average_nonoverlapping_value = (analyze(r.load(), False, mask, mask_size_x, mask_size_y, height, width) + \
-                                    analyze(g.load(), False, mask, mask_size_x, mask_size_y, height, width) + \
-                                    analyze(b.load(), False, mask, mask_size_x, mask_size_y, height, width)) / 3
-    
-    return (average_nonoverlapping_value + average_overlapping_value) / 2
+    for y in range(blocks_in_col):
+        for x in range(blocks_in_row):
+            counter_R = []
+            counter_G = []
+            counter_B = []
+            for v in range(bh):
+                for h in range(bw):
+                    counter_R.append(r[y + v, x + h])  # не наоборот ли?
+                    counter_G.append(g[y + v, x + h])
+                    counter_B.append(b[y + v, x + h])
+
+            group_couters[0][get_group(counter_R, mask)] += 1
+            group_couters[1][get_group(counter_G, mask)] += 1
+            group_couters[2][get_group(counter_B, mask)] += 1
+            group_couters[0]['m' + get_group(counter_R, invert_mask)] += 1
+            group_couters[1]['m' + get_group(counter_G, invert_mask)] += 1
+            group_couters[2]['m' + get_group(counter_B, invert_mask)] += 1
+
+            counter_R = lsb_flip(counter_R)
+            counter_G = lsb_flip(counter_G)
+            counter_B = lsb_flip(counter_B)
+
+            group_couters[0]['i' + get_group(counter_R, mask)] += 1
+            group_couters[1]['i' + get_group(counter_G, mask)] += 1
+            group_couters[2]['i' + get_group(counter_B, mask)] += 1
+            group_couters[0]['im' + get_group(counter_R, invert_mask)] += 1
+            group_couters[1]['im' + get_group(counter_G, invert_mask)] += 1
+            group_couters[2]['im' + get_group(counter_B, invert_mask)] += 1
+
+    return (solve(group_couters[0]) + solve(group_couters[1]) + solve(group_couters[2])) / 3
 
 
-def analyze(channel, overlap, mask, mask_x, mask_y, h, w):
-    startx = 0
-    starty = 0
-    block = [0]*mask_x*mask_y
-    regular = 0
-    singular = 0
-    negregular = 0
-    negsingular = 0
-    unusable = 0
-    negunusable = 0
+def get_group(pix, mask):
+    flip_pix = pix[:]
 
-    while startx < w and starty < h:
-        for m in [0, 1]:
-            l = 0
-            for i in range(0, mask_y):
-                for j in range(0, mask_x):
-                    block[l] = channel[startx + j, starty + i]
-                    l += 1
-
-            variation_B = get_variation(block)
-
-            block = flip_block(block, mask[m])
-            variation_P = get_variation(block)
-
-            block = flip_block(block, mask[m])
-
-            mask[m] = invert_mask(mask[m])
-            variation_N = get_negative_variation(block, mask[m])
-            mask[m] = invert_mask(mask[m])
-
-            if variation_P > variation_B:
-                regular += 1
-            if variation_P < variation_B:
-                singular += 1
-            if variation_P == variation_B:
-                unusable += 1
-
-            if variation_N > variation_B:
-                negregular += 1
-            if variation_N < variation_B:
-                negsingular += 1
-            if variation_N == variation_B:
-                negunusable += 1
-
-        if overlap:
-            startx += 1
-        else:
-            startx += mask_x
-
-        if startx >= (w - 1):
-            startx = 0
-            if overlap:
-                starty += 1
-            else:
-                starty += mask_y
-
-        if starty >= (h - 1):
-            break
-
-    allpixels = get_all_pixel_flips(channel, overlap, mask, mask_x, mask_y, h, w)
-
-    x = get_x(regular, negregular, allpixels[0], allpixels[2],
-              singular, negsingular, allpixels[1], allpixels[3])
-
-    if 2 * (x - 1) == 0:
-        epf = 0
-    else:
-        epf = abs(x / (2 * (x - 1)))
-
-    if x - 0.5 == 0:
-        ml = 0
-    else:
-        ml = abs(x / (x - 0.5))
-
-    # estimatedHiddenMessageLength = (Width * Height * 3) * ml) / 8      
-    return ml
-
-def get_variation(block):
-    variation = 0
-    for i in range(0, len(block), 4):
-        variation += abs(block[0 + i] - block[1 + i])
-        variation += abs(block[1 + i] - block[3 + i])
-        variation += abs(block[3 + i] - block[2 + i])
-        variation += abs(block[2 + i] - block[0 + i])
-
-    return variation
-
-def get_negative_variation(block, mask):
-    variation = 0
-    for i in range(0, len(block), 4):
-        val1 = block[0 + i]
-        val2 = block[1 + i]
-
-        if mask[0 + i] == -1:
-            val1 = invertLSB(val1)
-        if mask[1 + i] == -1:
-            val2 = invertLSB(val2)
-        
-        variation += abs(val1 - val2)
-
-        val1 = block[1 + i]
-        val2 = block[3 + i]
-
-        if mask[0 + i] == -1:
-            val1 = invertLSB(val1)
-        if mask[1 + i] == -1:
-            val2 = invertLSB(val2)
-        
-        variation += abs(val1 - val2)
-
-        val1 = block[3 + i]
-        val2 = block[2 + i]
-
-        if mask[0 + i] == -1:
-            val1 = invertLSB(val1)
-        if mask[1 + i] == -1:
-            val2 = invertLSB(val2)
-        
-        variation += abs(val1 - val2)
-
-        val1 = block[2 + i]
-        val2 = block[0 + i]
-
-        if mask[0 + i] == -1:
-            val1 = invertLSB(val1)
-        if mask[1 + i] == -1:
-            val2 = invertLSB(val2)
-        
-        variation += abs(val1 - val2)
-
-    return variation
-
-def flip_block(block, mask):
-    for i in range(len(block)):
+    for i in range(len(mask)):
         if mask[i] == 1:
-            block[i] = negateLSB(block[i])
+            flip_pix[i] = flip(pix[i])
         elif mask[i] == -1:
-            block[i] = invertLSB(block[i])
-    return block
+            flip_pix[i] = invert_flip(pix[i])
+
+    d1 = smoothness(pix)
+    d2 = smoothness(flip_pix)
+
+    if d1 >  d2: 
+        return 'S'
+    
+    if d1 < d2:
+        return 'R'
+
+    return 'U'
 
 
-def invert_mask(mask):
-    return list(map(lambda x: -x, mask))
+def flip(val):
+    if val & 1:
+        return val - 1
+
+    return val + 1
 
 
-def invertLSB(x):
-    if x == 255:
-        return 256
-    if x == 256:
-        return 255
-    return (negateLSB(x + 1) - 1)
+def invert_flip(val):
+    if val & 1:
+        return val + 1
 
-def negateLSB(x):
-    tmp = x & 0xfe
-    if tmp == x:
-        return x | 0x1
-    else:
-        return tmp
+    return val - 1
 
-def get_all_pixel_flips(channel, overlap, mask, mask_x, mask_y, h, w):
-    all_mask = [1]*mask_x*mask_y
 
-    startx = 0
-    starty = 0
-    block = [0]*mask_x*mask_y
-    regular = 0
-    singular = 0
-    negregular = 0
-    negsingular = 0
-    unusable = 0
-    negunusable = 0
+def smoothness(pix):
+    s = 0
+    for i in range(len(pix) - 1):
+        s += abs(pix[i + 1] - pix[i])
 
-    while startx < w and starty < h:
-        for m in [0, 1]:
-            l = 0
-            for i in range(0, mask_y):
-                for j in range(0, mask_x):
-                    block[l] = channel[startx + j, starty + i]
-                    l += 1
+    return s
 
-            block = flip_block(block, all_mask)
-            variation_B = get_variation(block)
 
-            block = flip_block(block, mask[m])
-            variation_P = get_variation(block)
+def lsb_flip(pix):
+    return list(map(lambda x: x ^ 1, pix))
 
-            block = flip_block(block, mask[m])
 
-            mask[m] = invert_mask(mask[m])
-            variation_N = get_negative_variation(block, mask[m])
-            mask[m] = invert_mask(mask[m])
+def solve(groups):
+    d0 = groups['R'] - groups['S']
+    dm0 = groups['mR'] - groups['mS']
+    d1  = groups['iR']  - groups['iS']
+    dm1 = groups['imR']  - groups['imS']
+    a = 2 * (d1 + d0)
+    b = dm0 - dm1 - d1 - d0 * 3
+    c = d0 - dm0
 
-            if variation_P > variation_B:
-                regular += 1
-            if variation_P < variation_B:
-                singular += 1
-            if variation_P == variation_B:
-                unusable += 1
+    D = b * b - 4 * a * c
 
-            if variation_N > variation_B:
-                negregular += 1
-            if variation_N < variation_B:
-                negsingular += 1
-            if variation_N == variation_B:
-                negunusable += 1
+    if D < 0:
+        return 0 
 
-        if overlap:
-            startx += 1
-        else:
-            startx += mask_x
+    b *= -1
 
-        if startx >= (w - 1):
-            startx = 0
-            if overlap:
-                starty += 1
-            else:
-                starty += mask_y
+    if D == 0:
+        return (b / 2 / a) / (b / 2 / a - 0.5)
 
-        if starty >= (h - 1):
-            break
+    D = sqrt(D)
 
-    return regular, singular, negregular, negsingular
+    x1 = (b + D) / 2 / a
+    x2 = (b - D) / 2 / a
 
-def get_x(r, rm, r1, rm1, s, sm, s1, sm1):
-    x = 0
-    dzero = r - s 
-    dminuszero = rm - sm
-    done = r1 - s1
-    dminusone = rm1 - sm1
+    if abs(x1) < abs(x2):
+        return x1 / (x1 - 0.5)
 
-    a = 2 * (done + dzero)
-    b = dminuszero - dminusone - done - (3 * dzero)
-    c = dzero - dminuszero
-
-    if a == 0:
-        x = c / b
-
-    discriminant = b**2 - (4 * a * c)
-
-    if discriminant >= 0:
-        rootpos = ((-1 * b) + sqrt(discriminant)) / (2 * a)
-        rootneg = ((-1 * b) - sqrt(discriminant)) / (2 * a)
-
-        if abs(rootpos) <= abs(rootneg):
-            x = rootpos
-        else:
-            x = rootneg
-    else:
-        cr = (rm - r) / (r1 - r + rm - rm1)
-        cs = (sm - s) / (s1 - s + sm - sm1)
-        x = (cr + cs) / 2
-
-    if x == 0:
-        a_r = ((rm1 - r1 + r - rm) + (rm - r) / x) / (x - 1)
-        a_s = ((sm1 - s1 + s - sm) + (sm - s) / x) / (x - 1)
-
-        if a_s > 0 or a_r < 0:
-            cr = (rm - r) / (r1 - r + rm - rm1)
-            cs = (sm - s) / (s1 - s + sm - sm1)
-            x = (cr + cs) / 2
-
-    return x
+    return x2 / (x2 - 0.5)
 
 if __name__ == "__main__":
-    img = Image.open("30.png")
+    img = Image.open("pure.png")
     print(rs_test(img))
+
