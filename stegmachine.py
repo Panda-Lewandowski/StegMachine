@@ -46,6 +46,8 @@ if __name__ == "__main__":
         elif sys.argv[1] == "visual":
             if sys.argv[2] == "-b":
                 an.visual_attack(Image.open(sys.argv[2]), bitnum=sys.argv[3])
+            elif sys.argv[2] == "-j":
+                an.visual_attack(Image.open(sys.argv[3]), join=True)
             else:
                 an.visual_attack(Image.open(sys.argv[2]))
         elif sys.argv[1] == "chi":

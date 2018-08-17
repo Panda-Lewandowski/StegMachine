@@ -4,7 +4,7 @@ import os
 import logging
 from methods.chi_square import chi_squared_test
 from methods.sample_pairs import spa_test
-from methods.rs import rs_test
+from methods.RS import rs_test
 import numpy as np
 
 
@@ -29,32 +29,53 @@ class Analyzer:
         except AttributeError:
             logging.info("Sorry, there is no exif data!")
 
-    def visual_attack(self, img, bitnum=1):
+    def visual_attack(self, img, join=False, bitnum=1):
         logging.info('Visualising lsb for '+ img.filename +' ...🌀')
         height, width = img.size
 
-        channels = img.split()
+        if join == False:
+            channels = img.split()
+            colors = [(0, 0, 0), (0, 255, 0), (0, 0, 255)]
+            suffixes = ['red', 'green', 'blue']
 
-        colors = [(0, 0, 0), (0, 255, 0), (0, 0, 255)]
-        suffixes = ['red', 'green', 'blue']
+            for k in range(3):
+                channel = channels[k].load()
+                img_ch = Image.new("RGB", (height, width), color=colors[k])
 
-        for k in range(3):
-            channel = channels[k].load()
-            img_ch = Image.new("RGB", (height, width), color=colors[k])
-
+                for i in range(height):
+                    for j in range(width):
+                        bit = int((bin(channel[i, j]))[-bitnum])
+                        if bit == 1:
+                            if k == 0:
+                                img_ch.putpixel((i, j), 255)
+                            else:
+                                img_ch.putpixel((i, j), 0)
+                name = suffixes[k] + "-" + img.filename.split(".")[0] + ".bmp"
+                img_ch.save(name)
+                logging.info("Openning " + suffixes[k] + " component...🌀")
+                # os.system("open " + name)
+                img_ch.show()
+        else:
+            img_ch = Image.new("RGB", (height, width), color=(0, 0, 0))
             for i in range(height):
                 for j in range(width):
-                    bit = int((bin(channel[i, j]))[-bitnum])
-                    if bit == 1:
-                        if k == 0:
-                            img_ch.putpixel((i, j), 255)
+                    pixel = img.getpixel((i, j))
+                    if len(pixel) == 4:
+                        pixel = pixel[:-1]
+                    new_pixel = [0, 0, 0]
+                    for k in range(3):
+                        if int(bin(pixel[k])[-1]) == 1:
+                            new_pixel[k] = 255
                         else:
-                            img_ch.putpixel((i, j), 0)
-            name = suffixes[k] + "-" + img.filename.split(".")[0] + ".bmp"
-            img_ch.save(name)
-            logging.info("Openning " + suffixes[k] + " component...🌀")
+                            new_pixel[k] = 0
+
+                    img_ch.putpixel((i, j), tuple(new_pixel))
+            img_ch.save("LSB-" + img.filename.split(".")[0] + ".bmp")
+            logging.info("Openning LSB image...🌀")
             # os.system("open " + name)
             img_ch.show()
+
+
 
     def chi_squared_attack(self, img):
         logging.info('Calculating chi_squared for '+ img.filename +' ...🌀')
