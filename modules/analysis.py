@@ -1,3 +1,13 @@
+#!/usr/bin/env python3
+# coding:UTF-8
+
+""" 
+The module contains class Analyzer that implements 
+most known attacks on stegocontainers.
+
+:author: Pandora Lewandowski 
+"""
+
 from PIL import Image
 from PIL.ExifTags import TAGS
 import os
@@ -9,11 +19,12 @@ import numpy as np
 
 
 class Analyzer:
+    """Class containing all the necessary functions for stegoanalysis"""
     def __init__(self, log_lvl=logging.INFO):
         logging.basicConfig(format='%(levelname)-8s [%(asctime)s] %(message)s', level=log_lvl)
-        # logging.info('Analyzer was created.')
 
     def check_tests(self):
+        """Checks the location of the test folder in the right place"""
         try:
             os.chdir("Tests/")
         except FileNotFoundError:
@@ -23,6 +34,11 @@ class Analyzer:
             logging.info("Everything is fine with the test folder.✅")
 
     def exif(self, img):
+        """Prints exif data
+
+        :param img: Image with metadata
+        :return: Returns s dict with exif-tags
+        """
         try:
             exif = { TAGS[k]: v for k, v in img._getexif().items() if k in TAGS }
             return exif
@@ -30,12 +46,24 @@ class Analyzer:
             logging.info("Sorry, there is no exif data!")
 
     def visual_attack(self, img, join=False, bitnum=1):
+        """Implementing a visual attack
+
+        Visual attack can be of two kinds.
+        In the first case, three images of channels with LSB 
+        are created, in the second, these three images are 
+        combined into one. Images are opened by means of 
+        the operating system.
+
+        :param img: Image for attack
+        :param join: Is it necessary to divide the image into channels
+        :param bitnum: How many LSBs need to take
+        """
         logging.info('Visualising lsb for '+ img.filename +' ...🌀')
         height, width = img.size
 
         if join == False:
             channels = img.split()
-            colors = [(0, 0, 0), (0, 255, 0), (0, 0, 255)]
+            colors = [(0, 0, 0), (0, 255, 0), (0, 0, 255)] # red, green, blue
             suffixes = ['red', 'green', 'blue']
 
             for k in range(3):
@@ -44,23 +72,22 @@ class Analyzer:
 
                 for i in range(height):
                     for j in range(width):
-                        bit = int((bin(channel[i, j]))[-bitnum])
+                        bit = int((bin(channel[i, j]))[-bitnum]) # takes LSB
                         if bit == 1:
                             if k == 0:
-                                img_ch.putpixel((i, j), 255)
+                                img_ch.putpixel((i, j), 255) # black
                             else:
-                                img_ch.putpixel((i, j), 0)
+                                img_ch.putpixel((i, j), 0) # white
                 name = suffixes[k] + "-" + img.filename.split(".")[0] + ".bmp"
                 img_ch.save(name)
                 logging.info("Openning " + suffixes[k] + " component...🌀")
-                # os.system("open " + name)
                 img_ch.show()
         else:
             img_ch = Image.new("RGB", (height, width), color=(0, 0, 0))
             for i in range(height):
                 for j in range(width):
                     pixel = img.getpixel((i, j))
-                    if len(pixel) == 4:
+                    if len(pixel) == 4: # if RGBA
                         pixel = pixel[:-1]
                     new_pixel = [0, 0, 0]
                     for k in range(3):
@@ -72,18 +99,14 @@ class Analyzer:
                     img_ch.putpixel((i, j), tuple(new_pixel))
             img_ch.save("LSB-" + img.filename.split(".")[0] + ".bmp")
             logging.info("Openning LSB image...🌀")
-            # os.system("open " + name)
             img_ch.show()
 
-
-
-    def chi_squared_attack(self, img):
+    def chi_squared_attack(self, img, eps=1e-5):
         logging.info('Calculating chi_squared for '+ img.filename +' ...🌀')
-        eps = 1e-5
         channels = img.split()
-        height, width = img.size
+        width, height = img.size
 
-        img_to_blend = Image.new("RGB", (height, width), color=(0, 0, 0))
+        img_to_blend = Image.new("RGB", (width, height), color=(0, 0, 0))
     
         for i in range(height):
             prob = 0
@@ -93,13 +116,13 @@ class Analyzer:
             prob /= 3
             if 0.5 - eps < prob < 0.5 + eps:
                 for j in range(width):
-                    img_to_blend.putpixel((j, i), (209, 167, 27))
+                    img_to_blend.putpixel((i, j), (209, 167, 27))
             elif prob < 0.5 - eps:
                 for j in range(width):
-                    img_to_blend.putpixel((j, i), (112, 209, 27))
+                    img_to_blend.putpixel((i, j), (112, 209, 27))
             elif prob > 0.5 + eps:
                 for j in range(width):
-                    img_to_blend.putpixel((j, i), (255, 0, 0))
+                    img_to_blend.putpixel((i, j), (255, 0, 0))
 
         result = Image.blend(img, img_to_blend, 0.5)
         result.save("chi-" + img.filename)
