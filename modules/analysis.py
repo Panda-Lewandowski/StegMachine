@@ -2,7 +2,7 @@
 # coding:UTF-8
 
 """ 
-The module contains class Analyzer that implements 
+This module contains class Analyzer that implements 
 most known attacks on stegocontainers.
 
 :author: Pandora Lewandowski 
@@ -38,6 +38,7 @@ class Analyzer:
 
         :param img: Image with metadata
         :return: Returns s dict with exif-tags
+
         """
         try:
             exif = { TAGS[k]: v for k, v in img._getexif().items() if k in TAGS }
@@ -57,6 +58,7 @@ class Analyzer:
         :param img: Image for attack
         :param join: Is it necessary to divide the image into channels
         :param bitnum: How many LSBs need to take
+
         """
         logging.info('Visualising lsb for '+ img.filename +' ...🌀')
         height, width = img.size
@@ -102,27 +104,40 @@ class Analyzer:
             img_ch.show()
 
     def chi_squared_attack(self, img, eps=1e-5):
+        """Implementing a chi-squared attack
+
+        Westfeld and Pfitzmann attack using chi-square test.
+        The paper describing this method can be found here:
+        http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.94.5975&rep=rep1&type=pdf 
+        The test is applied to each line, then the original image 
+        is colored in accordance with the result. 
+        A new image with a test result is saved in the current directory.
+
+
+        :param img: Image for attack
+        :param eps: Error value for probability  (default is 1e-5)
+        """
         logging.info('Calculating chi_squared for '+ img.filename +' ...🌀')
         channels = img.split()
         width, height = img.size
 
-        img_to_blend = Image.new("RGB", (width, height), color=(0, 0, 0))
+        img_to_blend = Image.new(img.mode, (width, height), color=(0, 0, 0)) # image with results 
     
         for i in range(height):
             prob = 0
             for ch in channels:
-                data = ch.crop((0, i, width, i+1))
+                data = ch.crop((0, i, width, i+1)) # crop for new line 
                 prob += chi_squared_test(data)[1]
             prob /= 3
-            if 0.5 - eps < prob < 0.5 + eps:
+            if 0.5 - eps < prob < 0.5 + eps: 
                 for j in range(width):
-                    img_to_blend.putpixel((i, j), (209, 167, 27))
+                    img_to_blend.putpixel((j, i), (209, 167, 27)) # yellow
             elif prob < 0.5 - eps:
                 for j in range(width):
-                    img_to_blend.putpixel((i, j), (112, 209, 27))
+                    img_to_blend.putpixel((j, i), (112, 209, 27)) # green
             elif prob > 0.5 + eps:
                 for j in range(width):
-                    img_to_blend.putpixel((i, j), (255, 0, 0))
+                    img_to_blend.putpixel((j, i), (255, 0, 0)) # red
 
         result = Image.blend(img, img_to_blend, 0.5)
         result.save("chi-" + img.filename)
