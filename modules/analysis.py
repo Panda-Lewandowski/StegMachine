@@ -116,6 +116,7 @@ class Analyzer:
 
         :param img: Image for attack
         :param eps: Error value for probability  (default is 1e-5)
+        
         """
         logging.info('Calculating chi_squared for '+ img.filename +' ...🌀')
         channels = img.split()

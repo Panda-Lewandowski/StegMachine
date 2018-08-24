@@ -8,7 +8,7 @@ def rs_test(img, bw=2, bh=2, mask=[1, 0, 0, 1]):
 
     blocks_in_row = floor(width / bw)
     blocks_in_col = floor(height / bh)
-    r, g, b = img.split()
+    r, g, b = img.split()[:3]
     r = r.load()
     g = g.load()
     b = b.load() 
@@ -25,7 +25,7 @@ def rs_test(img, bw=2, bh=2, mask=[1, 0, 0, 1]):
             counter_B = []
             for v in range(bh):
                 for h in range(bw):
-                    counter_R.append(r[y + v, x + h])  # не наоборот ли?
+                    counter_R.append(r[y + v, x + h])  # not vice versa?
                     counter_G.append(g[y + v, x + h])
                     counter_B.append(b[y + v, x + h])
 
