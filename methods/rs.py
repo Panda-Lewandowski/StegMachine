@@ -18,12 +18,13 @@ def rs_test(img, bw=2, bh=2, mask=[1, 0, 0, 1]):
 		{'R': 0, 'S': 0, 'U': 0, 'mR': 0, 'mS': 0, 'mU': 0, 'iR': 0, 'iS': 0, 'iU': 0, 'imR': 0, 'imS': 0, 'imU': 0},
 		{'R': 0, 'S': 0, 'U': 0, 'mR': 0, 'mS': 0, 'mU': 0, 'iR': 0, 'iS': 0, 'iU': 0, 'imR': 0, 'imS': 0, 'imU': 0}]
 
+
     for y in range(blocks_in_col):
         for x in range(blocks_in_row):
             counter_R = []
             counter_G = []
             counter_B = []
-            for v in range(bh):
+            for v in range(bh): 
                 for h in range(bw):
                     counter_R.append(r[y + v, x + h])  # not vice versa?
                     counter_G.append(g[y + v, x + h])

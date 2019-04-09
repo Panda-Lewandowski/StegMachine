@@ -12,7 +12,7 @@ def spa_test(img):
 
     average = 0.0
 
-    r, g, b = img.split()
+    r, g, b = img.split()[:3]
 
     average = analyze(r.load(), height, width)
     average += analyze(g.load(), height, width, channel='g')
