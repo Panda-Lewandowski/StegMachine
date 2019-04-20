@@ -3,8 +3,10 @@ Welcome to StegMachine's documentation!
 
 .. toctree::
    :maxdepth: 2
+   :hidden:
     
-   analysis 
+   analysis
+   generate_data 
 
 
 Indices and tables
