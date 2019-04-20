@@ -12,9 +12,9 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 import os
 import logging
-from methods.chi_square import chi_squared_test
-from methods.sample_pairs import spa_test
-from methods.rs import rs_test
+from methods.statistics.chi_square import chi_squared_test
+from methods.statistics.sample_pairs import spa_test
+from methods.statistics.rs import rs_test
 import numpy as np
 
 
@@ -43,7 +43,7 @@ class Analyzer:
         try:
             exif = { TAGS[k]: v for k, v in img._getexif().items() if k in TAGS }
             return exif
-        except AttributeError:
+        except AttributeError as e:
             logging.info("Sorry, there is no exif data!")
 
     def visual_attack(self, img, join=False, bitnum=1):
@@ -74,7 +74,9 @@ class Analyzer:
 
                 for i in range(height):
                     for j in range(width):
-                        bit = int((bin(channel[i, j]))[-bitnum]) # takes LSB
+                        bin_channel = bin(channel[i, j])
+                        bin_channel = bin_channel[:2] + '0'*(10-len(bin_channel)) + bin_channel[2:]
+                        bit = int(bin_channel[-bitnum]) # takes LSB
                         if bit == 1:
                             if k == 0:
                                 img_ch.putpixel((i, j), 255) # black
