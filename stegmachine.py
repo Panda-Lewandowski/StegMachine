@@ -34,13 +34,13 @@ if __name__ == "__main__":
     else:
         args = parser.parse_args()
         img = Image.open(args.input_file.name)
+        # img.verify()
 
         if args.analysis:
             an = Analyzer()
             
             if args.analysis == "exif":
-                print(args.input_file.name)
-                an.exif(img)
+                an.exif(args.input_file.name)
             elif args.analysis == "visual":
                 if args.b:
                     an.visual_attack(img, bitnum=args.b)
