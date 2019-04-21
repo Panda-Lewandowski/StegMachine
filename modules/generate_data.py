@@ -1,3 +1,7 @@
+""" 
+This module contains class Generator to create new data.
+"""
+
 from PIL import Image, ImageDraw
 from stegano import lsb
 from string import ascii_letters
@@ -15,6 +19,14 @@ from settings import full_spectrum_tools
 
 
 class Generator:
+    """A class containing the necessary functions for creating new data
+
+    :param tools: Tool name for steganography. If None then Stegano, cloacked-pixel or OpenStego will be used.
+    :param text: Encryption message
+    :param seed: Random seed
+    :param log_lvl: Logging information level
+    
+    """
     def __init__(self, tools=None, text="SUPERSECRET", seed=[i for i in range(10, 110, 10)], log_lvl=logging.INFO):
         if tools is None:
             tools = full_spectrum_tools
@@ -25,9 +37,14 @@ class Generator:
         logging.info('Generator was created.')
 
     def get_random_word(self, length):
+        """Generation of random word
+        
+        :param length: Generated word length
+        """
         return ''.join(random.choice(ascii_letters) for i in range(length))
 
     def prepare(self, ):
+        """Preparing a directory for the future dataset"""
         path = os.getcwd() + "/Tests"
         try:
             os.mkdir(path=path)
@@ -40,6 +57,15 @@ class Generator:
         logging.info('Now here:' + os.getcwd())
 
     def hide_n_check(self, path, msg, tool, seed, pure_hash):
+        """Hiding and extracting information
+
+        :param path: Path to image
+        :param msg: Encryption message
+        :param tool: Tool name
+        :param seed: Random seed
+        :param pure_hash: Encrypted word hash 
+
+        """
         decrypt = ""
         out_path = str(seed) + ".png"
 
@@ -107,8 +133,15 @@ class Generator:
         logging.info("Checking " + out_path + "... OK!✅")
 
     def generate_images(self, height, width, mode="single"):
+        """Image generating
+
+        :param height: Image height
+        :param width: Image width
+        :param mode: Mode of image generating. Three modes: single (generating single color images), random (generating random color images), real (generating real images)
+
+        """
         if mode == "single":
-            logging.info("Generate single color imeges...🌀")
+            logging.info("Generate single color images...🌀")
             os.mkdir(path="SingleColor/")
             os.chdir("SingleColor")
             random.seed()
@@ -116,14 +149,14 @@ class Generator:
             img = Image.new('RGB', (height, width), color)
 
         if mode == "random":
-            logging.info("Generate random color imeges...🌀")
+            logging.info("Generate random color images...🌀")
             os.mkdir(path="RandomColor/")
             os.chdir("RandomColor")
             a = numpy.random.rand(height, width,3) * 255
             img = Image.fromarray(a.astype('uint8')).convert('RGB')
 
         if mode == "real":
-            logging.info("Generate real imeges...🌀")
+            logging.info("Generate real images...🌀")
             img = Image.open("../test.png")
             os.mkdir(path="RealColor/")
             os.chdir("RealColor")
@@ -152,6 +185,7 @@ class Generator:
         os.chdir("..")
 
     def clear(self):
+        """Delete all generated data"""
         logging.info("Clearing  all test files...🌀")
         os.chdir("..")
         shutil.rmtree("Tests")
