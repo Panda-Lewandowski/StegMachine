@@ -5,6 +5,7 @@ import sys
 from PIL import Image
 
 from modules.analysis import Analyzer
+from tests import start_tests
 
 parser = argparse.ArgumentParser(add_help=True, 
                                  description='StegMachine is a flexible tool for stegoanalysis.')
@@ -55,5 +56,7 @@ if __name__ == "__main__":
                 an.spa_attack(img)
             elif args.analysis == "rs":
                 an.rs_attack(img)
+        elif args.test:
+            start_tests()
         else:
             logging.info("Invalid operation specified! ❌")
