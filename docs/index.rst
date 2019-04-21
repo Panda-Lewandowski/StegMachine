@@ -12,6 +12,30 @@ Welcome to StegMachine's documentation!
    sample_pairs 
 
 
+
+
+StegMachine is a flexible tool for stegoanalysis.
+
+
+Usage:
+
+* stegmachine.py exif <path to image file>
+
+* stegmachine.py visual <path to image file> 
+
+* stegmachine.py visual -b <n> <path to image file>
+
+* stegmachine.py chi <path to image file>
+
+* stegmachine.py spa <path to image file>
+
+* stegmachine.py rs <path to image file>
+
+* stegmachine.py generate 
+
+* stegmachine.py help
+
+
 Indices and tables
 ==================
 
