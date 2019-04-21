@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Analysis module &#8212; StegMachine 22.04.19 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">StegMachine 22.04.19 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-modules.analysis">
+<span id="analysis-module"></span><h1>Analysis module<a class="headerlink" href="#module-modules.analysis" title="Permalink to this headline">¶</a></h1>
+<p>This module contains class Analyzer that implements
+most known attacks on stegocontainers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">author</dt>
+<dd class="field-odd"><p>Pandora Lewandowski</p>
+</dd>
+</dl>
+<dl class="class">
+<dt id="modules.analysis.Analyzer">
+<em class="property">class </em><code class="descclassname">modules.analysis.</code><code class="descname">Analyzer</code><span class="sig-paren">(</span><em>log_lvl=20</em><span class="sig-paren">)</span><a class="headerlink" href="#modules.analysis.Analyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class containing all the necessary functions for stegoanalysis</p>
+<dl class="method">
+<dt id="modules.analysis.Analyzer.check_tests">
+<code class="descname">check_tests</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#modules.analysis.Analyzer.check_tests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks the location of the test folder in the right place</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="modules.analysis.Analyzer.chi_squared_attack">
+<code class="descname">chi_squared_attack</code><span class="sig-paren">(</span><em>img</em>, <em>eps=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#modules.analysis.Analyzer.chi_squared_attack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementing a chi-squared attack</p>
+<p>Westfeld and Pfitzmann attack using chi-square test.
+The paper describing this method can be found here:
+<a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.94.5975&amp;rep=rep1&amp;type=pdf">http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.94.5975&amp;rep=rep1&amp;type=pdf</a>
+The test is applied to each line, then the original image
+is colored in accordance with the result.
+A new image with a test result is saved in the current directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> – Image for attack</p></li>
+<li><p><strong>eps</strong> – Error value for probability  (default is 1e-5)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="modules.analysis.Analyzer.exif">
+<code class="descname">exif</code><span class="sig-paren">(</span><em>img</em><span class="sig-paren">)</span><a class="headerlink" href="#modules.analysis.Analyzer.exif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints exif data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>img</strong> – Image with metadata</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns s dict with exif-tags</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="modules.analysis.Analyzer.visual_attack">
+<code class="descname">visual_attack</code><span class="sig-paren">(</span><em>img</em>, <em>join=False</em>, <em>bitnum=1</em><span class="sig-paren">)</span><a class="headerlink" href="#modules.analysis.Analyzer.visual_attack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementing a visual attack</p>
+<p>Visual attack can be of two kinds.
+In the first case, three images of channels with LSB
+are created, in the second, these three images are
+combined into one. Images are opened by means of
+the operating system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> – Image for attack</p></li>
+<li><p><strong>join</strong> – Is it necessary to divide the image into channels</p></li>
+<li><p><strong>bitnum</strong> – How many LSBs need to take</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/analysis_doc.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">StegMachine 22.04.19 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Daria Scherbatyuk, Sofia Kirillova.
+    </div>
+  </body>
+</html>
