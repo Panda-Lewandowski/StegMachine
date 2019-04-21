@@ -35,6 +35,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Sample pairs method" href="sample_pairs.html" />
     <link rel="prev" title="Chi-squared test" href="chi_square.html" /> 
 </head>
 
@@ -84,6 +85,7 @@
 <li class="toctree-l1"><a class="reference internal" href="generate_data.html">Data generation module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="chi_square.html">Chi-squared test</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">RS-method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sample_pairs.html">Sample pairs method</a></li>
 </ul>
 
             
@@ -150,6 +152,96 @@
             
   <div class="section" id="module-methods.rs">
 <span id="rs-method"></span><h1>RS-method<a class="headerlink" href="#module-methods.rs" title="Permalink to this headline">¶</a></h1>
+<p>This module contains the required functions to implement
+RS method of attack.</p>
+<dl class="function">
+<dt id="methods.rs.flip">
+<code class="descclassname">methods.rs.</code><code class="descname">flip</code><span class="sig-paren">(</span><em>val</em><span class="sig-paren">)</span><a class="headerlink" href="#methods.rs.flip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Direct flipping function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>val</strong> – Pixel value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="methods.rs.get_group">
+<code class="descclassname">methods.rs.</code><code class="descname">get_group</code><span class="sig-paren">(</span><em>pix</em>, <em>mask</em><span class="sig-paren">)</span><a class="headerlink" href="#methods.rs.get_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get group of pixels</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pix</strong> – Pixel array of one of the RGB image channels</p></li>
+<li><p><strong>mask</strong> – Image mask</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="methods.rs.invert_flip">
+<code class="descclassname">methods.rs.</code><code class="descname">invert_flip</code><span class="sig-paren">(</span><em>val</em><span class="sig-paren">)</span><a class="headerlink" href="#methods.rs.invert_flip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverse flipping function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>val</strong> – Pixel value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="methods.rs.lsb_flip">
+<code class="descclassname">methods.rs.</code><code class="descname">lsb_flip</code><span class="sig-paren">(</span><em>pix</em><span class="sig-paren">)</span><a class="headerlink" href="#methods.rs.lsb_flip" title="Permalink to this definition">¶</a></dt>
+<dd><p>LSB flipping function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>val</strong> – Pixel value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="methods.rs.rs_test">
+<code class="descclassname">methods.rs.</code><code class="descname">rs_test</code><span class="sig-paren">(</span><em>img, bw=2, bh=2, mask=[1, 0, 0, 1]</em><span class="sig-paren">)</span><a class="headerlink" href="#methods.rs.rs_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using the RS method.</p>
+<p>This statistical method was by Jessica Friedrich, Miroslav Golyan and Andreas Pfitzman in 2001.
+It was named as the RS method.
+The original article can be found here: <a class="reference external" href="http://www.ws.binghamton.edu/fridrich/Research/acm_2001_03.pdf">http://www.ws.binghamton.edu/fridrich/Research/acm_2001_03.pdf</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> – Image name</p></li>
+<li><p><strong>bw</strong> – Parameter to select the number of pixels in a row</p></li>
+<li><p><strong>bh</strong> – Parameter to select the number of pixels in a column</p></li>
+<li><p><strong>mask</strong> – Image mask for flipping</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="methods.rs.smoothness">
+<code class="descclassname">methods.rs.</code><code class="descname">smoothness</code><span class="sig-paren">(</span><em>pix</em><span class="sig-paren">)</span><a class="headerlink" href="#methods.rs.smoothness" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculating pixel smoothness</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>val</strong> – Pixel value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="methods.rs.solve">
+<code class="descclassname">methods.rs.</code><code class="descname">solve</code><span class="sig-paren">(</span><em>groups</em><span class="sig-paren">)</span><a class="headerlink" href="#methods.rs.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Container analysis for steganography</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>groups</strong> – Received groups of three types of pixels</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 
@@ -159,6 +251,8 @@
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="sample_pairs.html" class="btn btn-neutral float-right" title="Sample pairs method" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="chi_square.html" class="btn btn-neutral float-left" title="Chi-squared test" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

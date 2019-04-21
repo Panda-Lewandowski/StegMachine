@@ -1,7 +1,16 @@
+""" 
+This module contains the required functions to implement 
+Sample pairs attack method.
+"""
+
 from PIL import Image
 from math import sqrt
 
 def spa_test(img):
+    """Using the Sample pairs method
+    
+    :param img: Image name
+    """
     height, width = img.size
 
     if width % 2  == 1:
@@ -27,6 +36,13 @@ def spa_test(img):
 
 
 def analyze(pix, h, w, channel='r'):
+    """Container analysis for steganography
+
+    :param pix: Image pixels
+    :param h: Image height
+    :param w: Image width
+    :param channel: One of three possible RGB channels. Set 'r' for red, 'g' for green, 'b' for blue
+    """
     P = 0 
     X = 0 
     Y = 0 
