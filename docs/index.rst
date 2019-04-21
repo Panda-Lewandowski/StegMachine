@@ -6,7 +6,10 @@ Welcome to StegMachine's documentation!
    :hidden:
     
    analysis
-   generate_data 
+   generate_data
+   chi_square
+   rs
+   sample_pairs 
 
 
 Indices and tables
