@@ -4,3 +4,4 @@ steganography==0.1.1
 pyexiftool==0.1.1
 Flask==1.0.2 
 gunicorn
+pycrypto==2.6.1
