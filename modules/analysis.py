@@ -14,7 +14,7 @@ import os
 import logging
 from methods.chi_square import chi_squared_test
 from methods.sample_pairs import spa_test
-from methods.RS import rs_test
+from methods.rs import rs_test
 import numpy as np
 
 
