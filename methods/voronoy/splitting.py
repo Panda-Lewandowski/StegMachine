@@ -16,4 +16,9 @@ def split_to_workspace(img, n, z):
 
 
 if __name__ == "__main__":
-    split_to_workspace(Image.open('test.bmp'), 13, 20)
+    img = Image.open('fast.jpg')
+    b, m = split_to_workspace(img, 25, 20)
+    k = 0
+    for i in b:
+        img.crop(i).save(f"test/{k}.png")
+        k += 1
