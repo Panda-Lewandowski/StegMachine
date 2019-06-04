@@ -1,6 +1,7 @@
 from tessellation_fast import averaging_fast, tessel_fast
 from tessellation_low import averaging_low, tessel_low_mem
 from message import split_message_to_bits, InvaligBlockLength
+from hashing import get_comparable_hash, get_md5_hash, get_sha256_hash
 from PIL import Image
 from bitstring import BitArray
 
@@ -14,9 +15,9 @@ class MessageSplittingTestCase(unittest.TestCase):
 		self.msg = b'\xb2\x1a\xe7\x04z\xce\x82i\xdc}\xf3\x08\xea\xba\xe1\xf70i4c\xda'
 		self.msg_split_default = ['10110010', '00011010', '11100111', '00000100', '01111010', 
 					  			  '11001110', '10000010', '01101001', '11011100', '01111101', 
-					              '11110011', '00001000', '11101010', '10111010', '11100001', 
-					              '11110111', '00110000', '01101001', '00110100', '01100011',
-					              '11011010']
+								  '11110011', '00001000', '11101010', '10111010', '11100001', 
+								  '11110111', '00110000', '01101001', '00110100', '01100011',
+								  '11011010']
 		self.msg_split_5 = ['10110', '01000', '01101', '01110', '01110', '00001', 
 							'00011', '11010', '11001', '11010', '00001', '00110', 
 							'10011', '10111', '00011', '11101', '11110', '01100', 
@@ -59,6 +60,36 @@ class MessageSplittingTestCase(unittest.TestCase):
 							   "Length of block must be less than 10!", 
 							   split_message_to_bits,
 							   self.msg, length=11)
+
+
+class HashingTestCase(unittest.TestCase):
+	def setUp(self):
+		self.path_to_img = "test/fast.jpg"
+		self.md5_hash = "36deb3fab78994cc135745d5cde05cc2"
+		self.sha256_hash = "6f6ad8d0345a8f7dc99c921a6aa7ad13f787a8e5dc43c9aa2c1b096392a46f9c"
+		self.comparable_hash = "ffffffe002030300"
+
+
+	def test_md5_hash(self):
+		img = Image.open(self.path_to_img)
+		img = np.array(img)
+		hash = get_md5_hash(img)
+		self.assertEqual(len(hash), 32)
+		self.assertEqual(hash, self.md5_hash)
+
+	def test_sha256_hash(self):
+		img = Image.open(self.path_to_img)
+		img = np.array(img)
+		hash = get_sha256_hash(img)
+		self.assertEqual(len(hash), 64)
+		self.assertEqual(hash, self.sha256_hash)
+
+	def test_comparable_hash(self):
+		img = Image.open(self.path_to_img)
+		img = np.array(img)
+		hash = get_comparable_hash(img)
+		self.assertEqual(len(hash), 16)
+		self.assertEqual(hash, self.comparable_hash)
 		
 
 def speed_test():
@@ -95,6 +126,7 @@ def speed_test():
 def start_tests():
 	VoronoyTestSuit = unittest.TestSuite()
 	VoronoyTestSuit.addTest(unittest.makeSuite(MessageSplittingTestCase))
+	VoronoyTestSuit.addTest(unittest.makeSuite(HashingTestCase))
 	runner = unittest.TextTestRunner(verbosity=2)
 	runner.run(VoronoyTestSuit)
 

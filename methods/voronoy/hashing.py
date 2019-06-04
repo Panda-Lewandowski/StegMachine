@@ -4,18 +4,48 @@ from PIL import Image
 
 
 def binarizate_by_average(elem, av):
+    """Evaluates an element relative to average value
+    
+    :param elem: element to evaluate
+    :type elem: int, float
+    :param av:  average value
+    :type av: int, float
+    :return: 1 or 0
+    :rtype: int, boolean
+    """
     return 1 if elem >= av else 0
 
 
 def get_sha256_hash(img_arr):
+    """Returns sha256 hash
+    
+    :param img_arr: array to hash 
+    :type img_arr: numpy array
+    :return: hex string
+    :rtype: str
+    """
     return hashlib.sha256(img_arr).hexdigest()
 
 
 def get_md5_hash(img_arr):
+    """Returns md5 hash
+    
+    :param img_arr: array to hash 
+    :type img_arr: numpy array
+    :return: hex string
+    :rtype: str
+    """
     return hashlib.md5(img_arr).hexdigest()
 
 
 def get_comparable_hash(img_arr):
+    """Returns comparable hash of image
+    
+    :param img_arr: array to hash 
+    :type img_arr: numpy array
+    :return: hex string
+    :rtype: str
+    """
     img = Image.fromarray(img_arr)
     img = img.resize((8, 8), Image.ANTIALIAS)
     img = img.convert("L")
@@ -24,14 +54,15 @@ def get_comparable_hash(img_arr):
     bin_by_av = np.vectorize(binarizate_by_average)
     img = bin_by_av(img, average_color)
     hash = img.flatten()
-    return "".join([str(elem) for elem in hash])
+    hash = "".join([str(elem) for elem in hash])
+    return "".join([hex(int(hash[i:i+4], 2))[2:] for i in range(0, len(hash), 4)])
 
 
 if __name__ == "__main__":
-    img = Image.open('test/3.png')
+    img = Image.open('test/fast.jpg')
     img = np.array(img)
     print(get_comparable_hash(img))
-    img = Image.open('test/4.png')
-    img = np.array(img)
-    print(get_comparable_hash(img))
+    print(get_sha256_hash(img))
+    print(get_md5_hash(img))
+    
     
