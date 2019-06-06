@@ -68,10 +68,28 @@ def split_to_workspace(img_size, n):
 
 
 def get_clusters_points_in_box(clusters, box):
+	"""Returns a list of points that belong to the box
+	
+	:param clusters: list of all points 
+	:type clusters: list
+	:param box: points of box
+	:type box: tuple
+	:return: list of points in the box
+	:rtype: list
+	"""
 	return [tuple(point) for point in clusters if is_point_in_box(point, box)]
 
 
 def get_rescale_clusters(clusters, new_zero):
+	"""Rescales points in box coordinates
+	
+	:param clusters: list of points 
+	:type clusters: list
+	:param new_zero: upper left corner of the box
+	:type new_zero: tuple
+	:return:  list of rescaled points 
+	:rtype: list
+	"""
 	return [(point[0] - new_zero[0], point[1] - new_zero[1]) for point in clusters]
 
 
