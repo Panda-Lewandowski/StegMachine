@@ -2,6 +2,8 @@ from tessellation_fast import averaging_fast, tessel_fast
 from tessellation_low import averaging_low, tessel_low_mem
 from message import split_message_to_bits, InvaligBlockLength
 from hashing import get_comparable_hash, get_md5_hash, get_sha256_hash
+from splitting import is_point_in_box, get_scheme_of_splitting, split_to_workspace, \
+	get_clusters_points_in_box, get_rescale_clusters
 from PIL import Image
 from bitstring import BitArray
 
@@ -64,11 +66,10 @@ class MessageSplittingTestCase(unittest.TestCase):
 
 class HashingTestCase(unittest.TestCase):
 	def setUp(self):
-		self.path_to_img = "test/fast.jpg"
-		self.md5_hash = "36deb3fab78994cc135745d5cde05cc2"
-		self.sha256_hash = "6f6ad8d0345a8f7dc99c921a6aa7ad13f787a8e5dc43c9aa2c1b096392a46f9c"
-		self.comparable_hash = "ffffffe002030300"
-
+		self.path_to_img = "test.jpg"
+		self.md5_hash = "0a9a5d0b2bf5e3d40718bf5409bcc55a"
+		self.sha256_hash = "e71652011b5f196020a2bde0182c994e3aa573eb7cd9934e66aa8603a0bae2b0"
+		self.comparable_hash = "f8ffff7300000000"
 
 	def test_md5_hash(self):
 		img = Image.open(self.path_to_img)
@@ -90,6 +91,88 @@ class HashingTestCase(unittest.TestCase):
 		hash = get_comparable_hash(img)
 		self.assertEqual(len(hash), 16)
 		self.assertEqual(hash, self.comparable_hash)
+
+
+class SplittingTestCase(unittest.TestCase):
+	def setUp(self):
+		self.boxes = [(0, 0, 10, 10), (10, 0, 20, 10), (20, 0, 30, 10), 
+							 (30, 0, 40, 10), (40, 0, 50, 10), (0, 10, 10, 20), 
+							 (10, 10, 20, 20), (20, 10, 30, 20), (30, 10, 40, 20), 
+							 (40, 10, 50, 20), (0, 20, 10, 30), (10, 20, 20, 30), 
+							 (20, 20, 30, 30), (30, 20, 40, 30), (40, 20, 50, 30), 
+							 (0, 30, 10, 40), (10, 30, 20, 40), (20, 30, 30, 40), 
+							 (30, 30, 40, 40), (40, 30, 50, 40), (0, 40, 10, 50), 
+							 (10, 40, 20, 50), (20, 40, 30, 50), (30, 40, 40, 50), 
+							 (40, 40, 50, 50)]
+		self.mini_boxes = [(2, 2, 8, 8), (12, 2, 18, 8), (22, 2, 28, 8), 
+							 (32, 2, 38, 8), (42, 2, 48, 8), (2, 12, 8, 18), 
+							 (12, 12, 18, 18), (22, 12, 28, 18), (32, 12, 38, 18), 
+							 (42, 12, 48, 18), (2, 22, 8, 28), (12, 22, 18, 28), 
+							 (22, 22, 28, 28), (32, 22, 38, 28), (42, 22, 48, 28), 
+							 (2, 32, 8, 38), (12, 32, 18, 38), (22, 32, 28, 38),
+							 (32, 32, 38, 38), (42, 32, 48, 38), (2, 42, 8, 48), 
+							 (12, 42, 18, 48), (22, 42, 28, 48), (32, 42, 38, 48), 
+							 (42, 42, 48, 48)]
+
+		self.clusters = [(3.01234948, 3.65434035),
+						(18.95317273, 9.67615443),
+						(16.27880307, 21.24067984),
+						(32.76976852, 34.90158977),
+						(12.81967335, 3.22666219),
+						(4.30452246, 33.42122797)]
+
+	def test_point_in_box(self):
+		answer = is_point_in_box((2, 2), (0, 0, 10, 10))
+		self.assertEqual(answer, True)
+
+	def test_point_not_in_box(self):
+		answer = is_point_in_box((12, 12), (0, 0, 5, 5))
+		self.assertEqual(answer, False)
+
+	def test_point_on_corner(self):
+		answer = is_point_in_box((10, 10), (0, 0, 10, 10))
+		self.assertEqual(answer, False)
+
+	def test_point_on_border(self):
+		answer = is_point_in_box((0, 5), (0, 0, 10, 10))
+		self.assertEqual(answer, False)
+
+	def test_splitting_square(self):
+		answer = get_scheme_of_splitting(25)
+		self.assertEqual(answer, (5, 5))
+
+	def test_splitting_bottom_half(self):
+		answer = get_scheme_of_splitting(27)
+		self.assertEqual(answer, (6, 5))
+
+	def test_splitting_top_half(self):
+		answer = get_scheme_of_splitting(32)
+		self.assertEqual(answer, (7, 5))
+
+	def test_splitting_image_accur(self):
+		b, m = split_to_workspace((50, 50), 25)
+		self.assertEqual(b, self.boxes)
+		self.assertEqual(m, self.mini_boxes)
+
+	def test_splitting_image_not_accur(self):
+		b, m = split_to_workspace((52, 50), 25)
+		self.assertEqual(b, self.boxes)
+		self.assertEqual(m, self.mini_boxes)
+
+	def test_get_points_in_box(self):
+		point = get_clusters_points_in_box(self.clusters, self.mini_boxes[0])
+		self.assertEqual(point, [(3.01234948, 3.65434035)])
+
+	def test_get_rescale(self):
+		point = get_clusters_points_in_box(self.clusters, self.mini_boxes[0])
+		self.assertEqual(get_rescale_clusters(point, self.mini_boxes[0]), 
+						[(1.0123494800000001, 1.65434035)])
+
+
+
+	
+		
+
 		
 
 def speed_test():
@@ -127,6 +210,7 @@ def start_tests():
 	VoronoyTestSuit = unittest.TestSuite()
 	VoronoyTestSuit.addTest(unittest.makeSuite(MessageSplittingTestCase))
 	VoronoyTestSuit.addTest(unittest.makeSuite(HashingTestCase))
+	VoronoyTestSuit.addTest(unittest.makeSuite(SplittingTestCase))
 	runner = unittest.TextTestRunner(verbosity=2)
 	runner.run(VoronoyTestSuit)
 
