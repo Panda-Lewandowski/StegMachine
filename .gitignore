@@ -111,3 +111,4 @@ Tests/
 *.bmp
 *.jpg
 test/
+test.*
