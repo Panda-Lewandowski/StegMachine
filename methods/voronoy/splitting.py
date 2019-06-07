@@ -1,7 +1,5 @@
 from PIL import Image, ImageDraw
 from math import sqrt, ceil, floor
-from tessellation_fast import averaging_fast, tessel_fast
-from tessellation_low import averaging_low, tessel_low_mem
 import numpy as np
 
 
@@ -97,11 +95,9 @@ if __name__ == "__main__":
 	img = Image.open('test.jpg')
 	b, m = split_to_workspace(img.size, 27)
 	img = np.array(img)
-	cn = 5000
+	cn = 2000
 	clusters = np.array(tuple(zip(np.random.rand(cn) * img.shape[0], np.random.rand(cn) * img.shape[1])))
-	dist_fast = tessel_fast(clusters, img.shape)
-	img_fast = averaging_fast(cn, img, dist_fast)
-	img = Image.fromarray(img_fast)
+	# img = Image.fromarray(img_fast)
 	
 	draw = ImageDraw.Draw(img)
 	for box in b:

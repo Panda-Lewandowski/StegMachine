@@ -1,16 +1,15 @@
 import numpy as np
 import random
-from PIL import Image
+from PIL import Image, ImageDraw
+from scipy.spatial import Voronoi
 
 from splitting import split_to_workspace, get_clusters_points_in_box, get_rescale_clusters
-from tessellation_fast import averaging_fast, tessel_fast
-from tessellation_low import averaging_low, tessel_low_mem
 from hashing import get_comparable_hash
 
 
 def extract(img, z, n, l=8):
 	size = img.size
-	_, windows = split_to_workspace(size, n, z)
+	_, windows = split_to_workspace(size, n)
 	msg = b""
 	for win in windows:
 		win = img.crop(win)
@@ -23,59 +22,79 @@ def extract(img, z, n, l=8):
 
 
 if __name__ == '__main__':
-	img_origin = Image.open("photo.jpg")
+	img_origin = Image.open("test.jpg")
 	size = img_origin.size
 	img = np.array(img_origin)
-	z = 50 # вычислять 
-	n = 25
-	# extract(img_origin, z, n)
+	n = 15
 
 	# np.random.seed(int(args.seed))
 
 	# cn = int(0.1 * np.min(img.shape))
-	# print(np.min(img.shape))
-	cn = 5000 # необходимо вычислять примерно одна точка на 100 пикселей 
-	# clusters = np.array(tuple(zip(np.random.rand(cn) * img.shape[0], np.random.rand(cn) * img.shape[1])))
-	# dist_fast = tessel_fast(clusters, img.shape)
-	# img_fast = averaging_fast(cn, img, dist_fast)
+	cn = 2000 # необходимо вычислять примерно одна точка на 100 пикселей 
+	clusters = np.array(tuple(zip(np.random.rand(cn) * img.shape[1], np.random.rand(cn) * img.shape[0])))
+	vor = Voronoi(clusters)
 
-	# b, m = split_to_workspace(size, n, z)
-	# img = Image.fromarray(img_fast)
-	# sim1 = img.crop(b[0])
+	points = vor.vertices.tolist()
+	clus = clusters.tolist()
+	draw = ImageDraw.Draw(img_origin)
+	for i in range(len(points)):
+		points[i] = tuple(points[i])
+	for j in range(len(clus)):
+		clus[j] = tuple(clus[j])
+
 	
-	# img.crop(m[15])
+	draw.point(clus, fill=(255, 0, 0))
+	for region in vor.regions:
+		if not -1 in region:
+			polygon = [tuple(vor.vertices[i]) for i in region]
+			if polygon:
+				draw.polygon(polygon)
 
-	# points_in_box = get_clusters_points_in_box(clusters, b[0])
-	# points_in_win = get_clusters_points_in_box(clusters, m[0])
-	# point_to_swap = random.choice(points_in_win)
-	# point_to_swap_new = (point_to_swap[0] + random.randint(-z/10, z/10), 
-	# 				 point_to_swap[1] + random.randint(-z/10, z/10))
-	# pixels = sim1.load()
-	# for p in get_rescale_clusters(points_in_box, b[15][:2]):
-	# 	pixels[int(p[0]), int(p[1])] = (0, 0, 0)
-	# sim1.show()
+	draw.point(points, fill=(0, 0, 255))
+	# img_origin.show()
 	
+	t = 8
+	boxes, mini_boxes = split_to_workspace(size, n)
+	draw.rectangle(mini_boxes[t])
+	img_origin.crop(boxes[t]).save("test/wow1.png")
 
-	# points_in_box.remove(point_to_swap)
-	# points_in_box.append(point_to_swap_new)
-	# points_in_box = get_rescale_clusters(points_in_box, b[15][:2]) # FIXME
+	piece = Image.open("test.jpg").crop(boxes[t])
+	points_in_piece = get_clusters_points_in_box(clusters, boxes[t])
+	points_in_piece = get_rescale_clusters(points_in_piece, boxes[t][:2])
+	vor_piece = Voronoi(points_in_piece)
+
+	points = vor_piece.vertices.tolist()
+	draw_piece = ImageDraw.Draw(piece)
 	
+	for i in range(len(points)):
+		points[i] = tuple(points[i])
 
-	# sim2 = np.array(img_origin.crop(b[0]))
-	# cluster_sim2 = np.array(points_in_box) 
-	# dist_sim2 = tessel_fast(cluster_sim2, sim2.shape)
+	draw_piece.point(points_in_piece, fill=(255, 0, 0))
+	draw_piece.rectangle(mini_boxes[t], fill=(0, 255, 255))
+	for region in vor_piece.regions:
+		if not -1 in region:
+			polygon = [tuple(vor_piece.vertices[i]) for i in region]
+			if polygon:
+				draw_piece.polygon(polygon)
 
-	# sim2_fast = averaging_fast(len(cluster_sim2), sim2, dist_sim2)
-	# sim2 = Image.fromarray(sim2_fast)
-	# sim2.save("test/sim2.png")
+	draw_piece.point(points, fill=(0, 0, 255))
+	piece.save("test/wow2.png")
 
+	points_in_win = get_clusters_points_in_box(clusters, mini_boxes[t])
+	points_in_win = get_rescale_clusters(points_in_win, boxes[t][:2])
+	point_to_swap = random.choice(points_in_win)
+	point_to_swap_new = (point_to_swap[0] + random.randint(-10, 10), 
+					 point_to_swap[1] + random.randint(-10, 10))
+	points_in_piece.remove(point_to_swap)
+	points_in_piece.append(point_to_swap_new)
+	vor_piece_new = Voronoi(points_in_piece)
+	draw_piece_new = ImageDraw.Draw(piece)
+	draw_piece_new.point(point_to_swap_new, fill=(0, 255, 255))
+	for region in vor_piece_new.regions:
+		if not -1 in region:
+			polygon = [tuple(vor_piece_new.vertices[i]) for i in region]
+			if polygon:
+				draw_piece_new.polygon(polygon)
+	piece.save("test/wow3.png")
 
-	# sim1.save("test/sim1.png")
 	
-	# img_low = averaging_low(cn, img, dist_fast)
-
-	# img_fast = Image.fromarray(img_fast)
-	# img_fast.show()
-	# img_fast.save("fast.jpg")
-	# img_low = Image.fromarray(img_low)
-	# img_low.save("low.jpg")

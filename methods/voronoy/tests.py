@@ -169,12 +169,6 @@ class SplittingTestCase(unittest.TestCase):
 						[(1.0123494800000001, 1.65434035)])
 
 
-
-	
-		
-
-		
-
 def speed_test():
 	img_origin = Image.open("test.jpg")
 	size_origin = img_origin.size
