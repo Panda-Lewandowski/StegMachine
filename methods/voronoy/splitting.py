@@ -91,6 +91,11 @@ def get_rescale_clusters(clusters, new_zero):
 	return [(point[0] - new_zero[0], point[1] - new_zero[1]) for point in clusters]
 
 
+def get_rescale_box(box, new_zero):
+	return box[0] - new_zero[0], box[1] - new_zero[1], \
+		   box[2] - new_zero[0], box[3] - new_zero[1]
+
+
 if __name__ == "__main__":
 	img = Image.open('test.jpg')
 	b, m = split_to_workspace(img.size, 27)
