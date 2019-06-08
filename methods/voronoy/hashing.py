@@ -24,7 +24,7 @@ def get_sha256_hash(img_arr):
     :return: hex string
     :rtype: str
     """
-    return hashlib.sha256(img_arr).hexdigest()
+    return hashlib.sha256(img_arr).digest()
 
 
 def get_md5_hash(img_arr):
@@ -35,7 +35,7 @@ def get_md5_hash(img_arr):
     :return: hex string
     :rtype: str
     """
-    return hashlib.md5(img_arr).hexdigest()
+    return hashlib.md5(img_arr).digest()
 
 
 def get_comparable_hash(img_arr):
@@ -55,11 +55,11 @@ def get_comparable_hash(img_arr):
     img = bin_by_av(img, average_color)
     hash = img.flatten()
     hash = "".join([str(elem) for elem in hash])
-    return "".join([hex(int(hash[i:i+4], 2))[2:] for i in range(0, len(hash), 4)])
+    return int(hash, 2).to_bytes(len(hash) // 8, byteorder='big')
 
 
 if __name__ == "__main__":
-    img = Image.open('test/fast.jpg')
+    img = Image.open('test.jpg')
     img = np.array(img)
     print(get_comparable_hash(img))
     print(get_sha256_hash(img))
