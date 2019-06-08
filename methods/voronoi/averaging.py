@@ -16,8 +16,10 @@ def get_polygon_color(pol, im):
 		count += 1
 		color.append(im.getpixel(p))
 		centerPoint = (centerPoint[0]+p[0], centerPoint[1]+p[1])
+		
 	#ZeroDivisionError
 	centerPoint = (centerPoint[0]/count, centerPoint[1]/count)
+
 
 	color.append(im.getpixel(centerPoint))
 	color.append(im.getpixel(centerPoint))

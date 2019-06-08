@@ -201,12 +201,12 @@ def speed_test():
 
 
 def start_tests():
-	VoronoyTestSuit = unittest.TestSuite()
-	VoronoyTestSuit.addTest(unittest.makeSuite(MessageSplittingTestCase))
-	VoronoyTestSuit.addTest(unittest.makeSuite(HashingTestCase))
-	VoronoyTestSuit.addTest(unittest.makeSuite(SplittingTestCase))
+	VoronoiTestSuit = unittest.TestSuite()
+	VoronoiTestSuit.addTest(unittest.makeSuite(MessageSplittingTestCase))
+	VoronoiTestSuit.addTest(unittest.makeSuite(HashingTestCase))
+	VoronoiTestSuit.addTest(unittest.makeSuite(SplittingTestCase))
 	runner = unittest.TextTestRunner(verbosity=2)
-	runner.run(VoronoyTestSuit)
+	runner.run(VoronoiTestSuit)
 
 
 if __name__ == "__main__":
