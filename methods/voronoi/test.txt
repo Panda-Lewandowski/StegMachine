@@ -1,0 +1,12 @@
+Name                                                               Stmts   Miss  Cover
+--------------------------------------------------------------------------------------
+averaging.py                                                          97     86    11%
+hashing.py                                                            26      5    81%
+message.py                                                            12      3    75%
+splitting.py                                                          45      8    82%
+tests.py                                                             213    104    51%
+voronoi.py                                                            81     58    28%
+voronoi_low.py                                                        66     53    20%
+/Users/pandas/Library/Python/3.7/lib/python/site-packages/six.py     472    236    50%
+--------------------------------------------------------------------------------------
+TOTAL                                                               1012    553    45%

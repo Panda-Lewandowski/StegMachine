@@ -8,20 +8,23 @@ most known attacks on stegocontainers.
 :author: Pandora Lewandowski 
 """
 
-from PIL import Image
-from PIL.ExifTags import TAGS
-import os
 import logging
-from methods.chi_square import chi_squared_test
-from methods.sample_pairs import spa_test
-from methods.rs import rs_test
+import os
+import exiftool
+
 import numpy as np
+from PIL import Image
+
+from methods.statistics.chi_square import chi_squared_test
+from methods.statistics.rs import rs_test
+from methods.statistics.sample_pairs import spa_test
 
 
 class Analyzer:
     """Class containing all the necessary functions for stegoanalysis"""
-    def __init__(self, log_lvl=logging.INFO):
+    def __init__(self, display=True, log_lvl=logging.INFO):
         logging.basicConfig(format='%(levelname)-8s [%(asctime)s] %(message)s', level=log_lvl)
+        self.display = display
 
     def check_tests(self):
         """Checks the location of the test folder in the right place"""
@@ -40,11 +43,14 @@ class Analyzer:
         :return: Returns s dict with exif-tags
 
         """
-        try:
-            exif = { TAGS[k]: v for k, v in img._getexif().items() if k in TAGS }
-            return exif
-        except AttributeError:
-            logging.info("Sorry, there is no exif data!")
+        with exiftool.ExifTool() as et:
+            meta = et.get_metadata(img)
+            if meta:
+                if self.display:
+                    self._display_exif(meta)
+                return meta
+            else: 
+                logging.info("Sorry, there is no exif data!")
 
     def visual_attack(self, img, join=False, bitnum=1):
         """Implementing a visual attack
@@ -74,7 +80,9 @@ class Analyzer:
 
                 for i in range(height):
                     for j in range(width):
-                        bit = int((bin(channel[i, j]))[-bitnum]) # takes LSB
+                        bin_channel = bin(channel[i, j])
+                        bin_channel = bin_channel[:2] + '0'*(10-len(bin_channel)) + bin_channel[2:]
+                        bit = int(bin_channel[-bitnum]) # takes LSB
                         if bit == 1:
                             if k == 0:
                                 img_ch.putpixel((i, j), 255) # black
@@ -155,10 +163,13 @@ class Analyzer:
         estimate = rs_test(img)
         logging.info("RS estimate for "+ img.filename + " is " + str(estimate))
 
+    def _display_exif(self, meta):
+        for key in meta.keys():
+            print("{:>30} \t :{:<30}".format(key, meta[key]))
+
 if __name__ == "__main__":
     an = Analyzer()
     # an.check_tests()
     an.visual_attack(Image.open("30.png"))
     # an.attack_chi_squared(mode="real")
     # an.generator.clear()
-

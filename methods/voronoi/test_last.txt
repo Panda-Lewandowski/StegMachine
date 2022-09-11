@@ -1,0 +1,6 @@
+Low Voronoi Stego class:	179.84872107359996  sec
+Voronoi Stego class with 2 process:	141.92244420875002  sec
+Voronoi Stego class with 6 process:	233.81391461299995  sec
+Voronoi Stego class with 2 process:	199.4582380020003  sec
+Voronoi Stego class with 4 process:	172.81293633249993  sec
+Voronoi Stego class with 8 process:	143.4691820713333  sec

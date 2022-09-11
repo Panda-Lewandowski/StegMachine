@@ -1,0 +1,2 @@
+Low Voronoi Stego class:	0.016069646500000017  sec
+Voronoi Stego class with 2 process:	0.0332568746  sec

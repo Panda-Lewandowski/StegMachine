@@ -109,4 +109,7 @@ Tests/
 
 *.png
 *.bmp
+*.jpg
+test/
+test.*
 ._*

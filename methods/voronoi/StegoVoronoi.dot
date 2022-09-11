@@ -1,0 +1,5 @@
+digraph "StegoVoronoi" {
+charset="utf-8"
+rankdir=BT
+"0" [label="{voronoi.StegoVoronoi|__proc_num\lcn : int\ldelta : int\lproc_num\lproc_num : int\l|__init__()\l__str__()\lembed()\lextract()\lpick_hash()\l}", shape="record"];
+}

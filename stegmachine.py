@@ -1,61 +1,62 @@
-import sys
+import argparse
 import logging
-from modules.analysis import Analyzer
+import sys
+
 from PIL import Image
 
-def usage(prog_name):
-    print("""
-    StegMachine is a flexible tool for stegoanalysis.
-    Usage:
-        {0} exif <path to image file>
-        {0} visual <path to image file> 
-        {0} visual -b <n> <path to image file>
-        {0} chi <path to image file>
-        {0} spa <path to image file>
-        {0} rs <path to image file>
-        {0} generate 
-        {0} help
-    """.format(prog_name))
-    sys.exit()
+from modules.analysis import Analyzer
+from tests import start_tests
 
-def help(prog_name):
-    print("""
-    USAGE: python3 {0} <module> <params> 
-    ______________________________________\n
-    MODULES
-    \t🔹exif <path to image file>               exif extracting module\n
-    \t🔹visual <params> <path to image file>    module for visual attack
-    \t       -b <n>        the number of lsb in which the message is embed  \n
-    \t🔹chi <path to image file>                module for chi-squared attack \n
-    \t🔹spa <path to image file>                module for sample pair attack \n
-    \t🔹rs <path to image file>                 module for rs-method attack \n
-    \t🔹generate                                genenrate data set with specified tools\n
-    \t🔹help                                    hint output\n
-    """.format(prog_name))
+parser = argparse.ArgumentParser(add_help=True, 
+                                 description='StegMachine is a flexible tool for stegoanalysis.')
+
+mode_group = parser.add_mutually_exclusive_group(required=True)
+mode_group.add_argument('--analysis', nargs='?', type=str, choices=['exif', 'chi', 'spa', 'rs', 'visual'], 
+                        help='Analyzing  module')
+mode_group.add_argument('--hiding', nargs='?', type=str, choices=[], help='Hiding  module')
+mode_group.add_argument('--test', action='store_true',  help='Test  module')
+mode_group.add_argument('--generation', action='store_true', help='Generation  module')
+
+params_group = parser.add_mutually_exclusive_group(
+
+)
+params_group.add_argument('-b', nargs='?',  type=int, choices=range(0, 255), metavar='from 0 to 255', 
+                        help="What bit should be displayed in the visual attack")
+params_group.add_argument('-j',action='store_true',
+                        help="Joins channels into one image")
+
+parser.add_argument('input_file', type=argparse.FileType('r'))
+parser.add_argument('ouput_dir', type=str)
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        usage(sys.argv[0])
-   
-    if len(sys.argv) == 2 and sys.argv[1] == "help":
-        help(sys.argv[0]) 
-    else: 
-        an = Analyzer()
-        if sys.argv[1] == "exif":
-            an.exif(Image.open(sys.argv[2]))
-        elif sys.argv[1] == "visual":
-            if sys.argv[2] == "-b":
-                an.visual_attack(Image.open(sys.argv[2]), bitnum=sys.argv[3])
-            elif sys.argv[2] == "-j":
-                an.visual_attack(Image.open(sys.argv[3]), join=True)
-            else:
-                an.visual_attack(Image.open(sys.argv[2]))
-        elif sys.argv[1] == "chi":
-            an.chi_squared_attack(Image.open(sys.argv[2]))
-        elif sys.argv[1] == "spa":
-            an.spa_attack(Image.open(sys.argv[2]))
-        elif sys.argv[1] == "rs":
-            an.rs_attack(Image.open(sys.argv[2]))
+        parser.print_help()
+    else:
+        args = parser.parse_args()
+        img = Image.open(args.input_file.name)
+        # img.verify()
+
+        if args.analysis:
+            an = Analyzer()
+            
+            if args.analysis == "exif":
+                an.exif(args.input_file.name)
+            elif args.analysis == "visual":
+                if args.b:
+                    an.visual_attack(img, bitnum=args.b)
+                elif args.j:
+                    print(args.j)
+                    an.visual_attack(img, join=True)
+                else:
+                    an.visual_attack(img)
+            elif args.analysis == "chi":
+                an.chi_squared_attack(img)
+            elif  args.analysis == "spa":
+                an.spa_attack(img)
+            elif args.analysis == "rs":
+                an.rs_attack(img)
+        elif args.test:
+            start_tests()
         else:
-            usage(sys.argv[0])
             logging.info("Invalid operation specified! ❌")
