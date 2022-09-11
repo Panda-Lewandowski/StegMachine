@@ -1,11 +1,11 @@
-from tessellation_fast import averaging_fast, tessel_fast
-from tessellation_low import averaging_low, tessel_low_mem
 from message import split_message_to_bits, InvaligBlockLength
 from hashing import get_comparable_hash, get_md5_hash, get_sha256_hash
 from splitting import is_point_in_box, get_scheme_of_splitting, split_to_workspace, \
 	get_clusters_points_in_box, get_rescale_clusters
 from PIL import Image
 from bitstring import BitArray
+from voronoi import StegoVoronoi
+from voronoi_low import StegoVoronoiLow
 
 import numpy as np
 import time
@@ -66,30 +66,30 @@ class MessageSplittingTestCase(unittest.TestCase):
 
 class HashingTestCase(unittest.TestCase):
 	def setUp(self):
-		self.path_to_img = "test.jpg"
-		self.md5_hash = "0a9a5d0b2bf5e3d40718bf5409bcc55a"
-		self.sha256_hash = "e71652011b5f196020a2bde0182c994e3aa573eb7cd9934e66aa8603a0bae2b0"
-		self.comparable_hash = "f8ffff7300000000"
+		self.path_to_img = "photo.jpg"
+		self.md5_hash = b"\xfa\x1b\t\xbb\xa9\x10\x15E\xd5\x88[\x8a9\x8f'J"
+		self.sha256_hash =  b'\xa2\xd0\xa2pn\xa8P<\xef\x90U\x83\x08*\xa1\x87\xe17\xfdqPC\x91&?\xc7C\x93\xbcR\x82\\'
+		self.comparable_hash = b'\xff\xff\xff\xe0\x02\x03\x03\x00'
 
 	def test_md5_hash(self):
 		img = Image.open(self.path_to_img)
 		img = np.array(img)
 		hash = get_md5_hash(img)
-		self.assertEqual(len(hash), 32)
+		self.assertEqual(len(hash), 16)
 		self.assertEqual(hash, self.md5_hash)
 
 	def test_sha256_hash(self):
 		img = Image.open(self.path_to_img)
 		img = np.array(img)
 		hash = get_sha256_hash(img)
-		self.assertEqual(len(hash), 64)
+		self.assertEqual(len(hash), 32)
 		self.assertEqual(hash, self.sha256_hash)
 
 	def test_comparable_hash(self):
 		img = Image.open(self.path_to_img)
 		img = np.array(img)
 		hash = get_comparable_hash(img)
-		self.assertEqual(len(hash), 16)
+		self.assertEqual(len(hash), 8)
 		self.assertEqual(hash, self.comparable_hash)
 
 
@@ -169,36 +169,129 @@ class SplittingTestCase(unittest.TestCase):
 						[(1.0123494800000001, 1.65434035)])
 
 
-def speed_test():
-	img_origin = Image.open("test.jpg")
-	size_origin = img_origin.size
+def speed_test_with_proccess_embed():
+	img = Image.open("test.jpg")
+	msg = b'\xb2\x1a\xe7\x04z\xce'
+
+	print("Create voronoi classes...")
+	svor_low = StegoVoronoiLow()
+	svor_default = StegoVoronoi()
+	svor_len = StegoVoronoi(num_of_proc=len(msg))
+	# svor_2proc = StegoVoronoi(num_of_proc=2) # as default
+	svor_4proc = StegoVoronoi(num_of_proc=4)
+	svor_more = StegoVoronoi(num_of_proc=len(msg)+2)
+
+	svors = [svor_low, svor_default, svor_len, svor_4proc, svor_more]
+
+	print("Starting speed test...")
+	attempts = 10
+	with open("embed_test.txt", "w") as file:
+		for svor in svors:
+			average_time = 0
+			real_attempts = 0
+			for i in range(attempts):
+				print(f"Starting {svor} speed test. Attempt № {i}")
+				try:
+					start = time.perf_counter()
+					stego_img = svor_low.embed(msg, img)
+					end = time.perf_counter()
+				except ZeroDivisionError:
+					print(f"{svor} got down by exception :(")
+				else:
+					t = end - start
+					print(f"Finishing {svor} speed test. Attempt № {i}. Result: {t}")
+					real_attempts += 1
+					average_time += t
+
+			work_time = average_time/real_attempts
+			print(f"Finishing {attempts} for {svor}. Average time - {work_time}")
+			file.write(f"{svor}:\t{work_time}  sec\n")
+
+
+def speed_test_with_proccess_extract():
+	msg = b'\xb2\x1a\xe7\x04z\xce'
+	img = Image.open("stego.png")
+
+	print("Create voronoi classes...")
+	svor_low = StegoVoronoiLow()
+	svor_default = StegoVoronoi()
+	svor_len = StegoVoronoi(num_of_proc=len(msg))
+	# svor_2proc = StegoVoronoi(num_of_proc=2) # as default
+	svor_4proc = StegoVoronoi(num_of_proc=4)
+	svor_more = StegoVoronoi(num_of_proc=len(msg)+2)
+
+	svors = [svor_low, svor_default, svor_len, svor_4proc, svor_more]
+
+	print("Starting speed test...")
+	attempts = 10
+	with open("extract_test.txt", "w") as file:
+		for svor in svors:
+			average_time = 0
+			real_attempts = 0
+			for i in range(attempts):
+				print(f"Starting {svor} speed test. Attempt № {i}")
+				try:
+					start = time.perf_counter()
+					svor.extract(img, len(msg))
+					end = time.perf_counter()
+				except ZeroDivisionError:
+					print(f"{svor} got down by exception :(")
+				else:
+					t = end - start
+					print(f"Finishing {svor} speed test. Attempt № {i}. Result: {t}")
+					real_attempts += 1
+					average_time += t
+
+			work_time = average_time/real_attempts
+			print(f"Finishing {attempts} for {svor}. Average time - {work_time}")
+			file.write(f"{svor}:\t{work_time}  sec\n")
+
+
+def min_cn():
+	img = Image.open("photo.jpg")
+	msg_buff = b'\x80iv\r\nu\xd4e\xf33'
+	cn = 3000
 	
-	cn_origin = 5000
-	scaling = [round(x, 2) for x in np.arange(0.1, 1.1, 0.1)]
-	with open("test.txt", "w") as file:
-		for sc in scaling:
-			size = (int(round(size_origin[0] * sc)), int(round(size_origin[1] * sc)))
-			img = img_origin.resize(size)
-			img = np.array(img)
-			cn = int(round(cn_origin * sc))
+	for i in range(5, len(msg_buff)):
+		end_flag = False
+		while not end_flag:
+			try:
+				print(f"Trying with {cn} for {i} bytes...")
+				msg = msg_buff[:i]
+				svor = StegoVoronoi(cn=cn, num_of_proc=2) 
+				stego_img = svor.embed(msg, img)
+				if svor.extract(stego_img, len(msg)) != msg:
+					raise IndexError("blabla")
+			except IndexError as e:
+				print(e)
+				cn += 500
+			else:
+				end_flag = True
+				print(cn, i)
+				cn = 3000
 
-			clusters = np.array(tuple(zip(np.random.rand(cn) * img.shape[0], np.random.rand(cn) * img.shape[1])))
+	
+def msg_size_speed():
+	img = Image.open("test.jpg")
+	msg = b'\xb2\x1a\xe7\x04z\xce\x80iv\r\nu\xd4e\xf33'
+	attempts = 5
+	for i in range(5, len(msg)):
+		average_time = 0
+		real_attempts = 0
+		for j in range(attempts):
+			print(f"Starting {i} bytes speed test. Attempt № {j}")
+			msg = msg[:i]
+			svor = StegoVoronoi(num_of_proc=2) 
+			start = time.perf_counter()
+			stego_img = svor.embed(msg, img)
+			end = time.perf_counter()
+			t = end - start
+			real_attempts += 1
+			average_time += t
+			print(f"Finishing for {i} bytes in {j} attempt. Time - {t}")
 
-			print(f"Start calculating with scale {sc}...")
-
-			fast_start = time.perf_counter()
-			dist_fast = tessel_fast(clusters, img.shape)
-			img_fast = averaging_fast(cn, img, dist_fast)
-			fast_end = time.perf_counter()
-
-			low_start = time.perf_counter()
-			dist_low = tessel_low_mem(clusters, img.shape)
-			img_low = averaging_fast(cn, img, dist_low)
-			low_end = time.perf_counter()
-
-			file.write("{}\t{}\t{}\n".format(size, fast_end - fast_start, low_end - low_start))
-			print(f"End calculating with scale {sc}...")
-
+		work_time = average_time/real_attempts
+		print(f"Finishing for {i} bytes. AvTime - {work_time}")
 
 def start_tests():
 	VoronoiTestSuit = unittest.TestSuite()
@@ -211,3 +304,4 @@ def start_tests():
 
 if __name__ == "__main__":
 	unittest.main()
+	# msg_size_speed()

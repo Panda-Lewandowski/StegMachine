@@ -112,3 +112,4 @@ Tests/
 *.jpg
 test/
 test.*
+._*

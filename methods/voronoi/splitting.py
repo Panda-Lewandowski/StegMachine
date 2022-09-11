@@ -101,39 +101,42 @@ def get_unrescale_clusters(clusters, old_zero):
 
 
 if __name__ == "__main__":
-	img = Image.open('test.jpg')
-	b, m = split_to_workspace(img.size, 27)
-	img = np.array(img)
-	cn = 2000
-	clusters = np.array(tuple(zip(np.random.rand(cn) * img.shape[0], np.random.rand(cn) * img.shape[1])))
+	img = Image.open('output82.png')
+	b, m = split_to_workspace(img.size, 23)
+	# img = np.array(img)
+	# cn = 10000
+	# clusters = np.array(tuple(zip(np.random.rand(cn) * img.shape[0], np.random.rand(cn) * img.shape[1])))
 	# img = Image.fromarray(img_fast)
 	
-	draw = ImageDraw.Draw(img)
+	# draw = ImageDraw.Draw(img)
+	i = 0
 	for box in b:
-		draw.rectangle(box)
+		# draw.rectangle(box)
+		img.crop(box).save(f"test/{i}.png")
+		i += 1
 	
-	for mbox in m:
-		draw.rectangle(mbox)
+	# for mbox in m:
+	# 	draw.rectangle(mbox)
 
-	# img.save("test2.png")
+	# img.save("rect34.png")
 	
 	# draw.point(clusters.flatten(), fill=(0,0,0))
-	img.save("test_rect.png")
-	for box in b:
-		draw.point(get_clusters_points_in_box(clusters, box), fill=(255, 0, 0))
+	# img.save("test_rect.png")
+	# for box in b:
+	# 	draw.point(get_clusters_points_in_box(clusters, box), fill=(255, 0, 0))
 	
-	for mbox in m:
-		draw.point(get_clusters_points_in_box(clusters, mbox), fill=(0, 0, 255))
+	# for mbox in m:
+	# 	draw.point(get_clusters_points_in_box(clusters, mbox), fill=(0, 0, 255))
 
-	img.save("test_points.png")
-	k = 0 
-	for box in b:
-		img_box = img.crop(box)
-		draw_box = ImageDraw.Draw(img_box)
-		points = get_clusters_points_in_box(clusters, box)
-		draw_box.point(get_rescale_clusters(points, box[:2]), fill=(255, 255, 0))
-		img_box.save(f"test/{k}.png")
-		k += 1
+	# img.save("test_points.png")
+	# k = 0 
+	# for box in b:
+	# 	img_box = img.crop(box)
+	# 	draw_box = ImageDraw.Draw(img_box)
+	# 	points = get_clusters_points_in_box(clusters, box)
+	# 	draw_box.point(get_rescale_clusters(points, box[:2]), fill=(255, 255, 0))
+	# 	img_box.save(f"test/{k}.png")
+	# 	k += 1
 
 
 

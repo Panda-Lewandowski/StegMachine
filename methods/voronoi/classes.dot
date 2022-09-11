@@ -1,0 +1,8 @@
+digraph "classes" {
+charset="utf-8"
+rankdir=BT
+"0" [label="{NoDaemonPool|Process\l|}", shape="record"];
+"1" [label="{NoDaemonProcess|daemon : property\l|_get_daemon()\l_set_daemon()\l}", shape="record"];
+"2" [label="{StegoVoronoi|__proc_num\lcn : int\ldelta : int\lproc_num\lproc_num : int\l|__init__()\l__str__()\lembed()\lextract()\lpick_hash()\l}", shape="record"];
+"1" -> "0" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="Process", style="solid"];
+}

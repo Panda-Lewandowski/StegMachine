@@ -3,6 +3,7 @@ from scipy.spatial import Voronoi
 from matplotlib.path import Path
 from functools import reduce
 import numpy as np
+from multiprocessing import Pool
 
 
 def get_polygon_color(pol, im):
@@ -11,15 +12,24 @@ def get_polygon_color(pol, im):
 	count = 0
 
 	for p in pol:
-		if p[0] >= im.size[0] or p[0] < 0 or p[1] >= im.size[1] or p[1] < 0:
-			continue
+		p = list(p)
+		if p[0] >= im.size[0]:
+			p[0] = im.size[0] - 1
+		
+		if p[0] < 0:
+			p[0] = 0
+			
+		if p[1] >= im.size[1]:
+			p[1] = im.size[1] - 1
+
+		if  p[1] < 0:
+			p[1] = 0
+
 		count += 1
-		color.append(im.getpixel(p))
+		color.append(im.getpixel(tuple(p)))
 		centerPoint = (centerPoint[0]+p[0], centerPoint[1]+p[1])
 		
-	#ZeroDivisionError
 	centerPoint = (centerPoint[0]/count, centerPoint[1]/count)
-
 
 	color.append(im.getpixel(centerPoint))
 	color.append(im.getpixel(centerPoint))
@@ -94,22 +104,36 @@ def voronoi_finite_polygons(vor, radius=None):
 	return new_regions, np.asarray(new_vertices)
 
 
+def draw_polygon(region, vertices, img_copy, draw):
+	polygon = [tuple(vertices[i]) for i in region]
+	if polygon:
+		color = get_polygon_color(polygon, img_copy)
+		draw.polygon(polygon, fill=color)
+
+
 def colorized_voronoi(voronoi, img):
 	img_copy = img.copy()
 	draw = ImageDraw.Draw(img_copy) 
 	regions, vertices = voronoi_finite_polygons(voronoi)
 	for region in regions:
-		polygon = [tuple(vertices[i]) for i in region]
-		if polygon:
-			color = get_polygon_color(polygon, img_copy)
-			draw.polygon(polygon, fill=color)
+		draw_polygon(region, vertices, img_copy, draw)
 	return img_copy
+
+
+# def colorized_voronoi_fast(voronoi, img):
+# 	img_copy = img.copy()
+# 	draw = ImageDraw.Draw(img_copy) 
+# 	pool = Pool()
+# 	regions, vertices = voronoi_finite_polygons(voronoi)
+# 	iter_args = [(region, vertices, img_copy, draw) for region in regions]
+# 	pool.starmap(draw_polygon, iter_args)
+# 	return img_copy
 
 
 if __name__ == "__main__":
 	img = Image.open("test.jpg")
 	draw = ImageDraw.Draw(img) 
-	cn = 5000
+	cn = 100
 	clusters = np.array(tuple(zip(np.random.rand(cn) * img.size[0], 
 								  np.random.rand(cn) * img.size[1])))
 
@@ -118,11 +142,12 @@ if __name__ == "__main__":
  		clus[j] = tuple(clus[j])
 	
 	vor = Voronoi(clusters)
-	regions, vertices = voronoi_finite_polygons(vor)
-	for region in regions:
-		polygon = [tuple(vertices[i]) for i in region]
-		if polygon:
-			color = get_polygon_color(polygon, img)
-			draw.polygon(polygon, fill=color) 
+	# regions, vertices = voronoi_finite_polygons(vor)
+	for region in vor.regions:
+		if not -1 in region:
+			polygon = [tuple(vor.vertices[i]) for i in region]
+			if polygon:
+				# color = get_polygon_color(polygon, img)
+				draw.polygon(polygon) 
 	img.show()
 

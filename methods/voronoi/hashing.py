@@ -59,9 +59,9 @@ def get_comparable_hash(img_arr):
 
 
 if __name__ == "__main__":
-    img = Image.open('test.jpg')
+    img = Image.open(f'photo.jpg')
     img = np.array(img)
-    print(get_comparable_hash(img))
+    print(get_comparable_hash(img).hex())
     print(get_sha256_hash(img))
     print(get_md5_hash(img))
     
