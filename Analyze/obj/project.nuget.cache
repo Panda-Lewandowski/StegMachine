@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "k2rDpnYC2DfIsLEu73B52n6I7ygHT/FrBS0t8vvY558O9+OiaZLnR6hjvv553Zo2OuMhoLTWu8HNThI5xm2oZA==",
+  "success": true,
+  "projectFilePath": "/home/avsjanka/Desktop/Projects/Stegano project/Analyze/Analyze.csproj",
+  "expectedPackageFiles": [
+    "/home/avsjanka/.nuget/packages/magick.net-q8-anycpu/12.2.2/magick.net-q8-anycpu.12.2.2.nupkg.sha512",
+    "/home/avsjanka/.nuget/packages/magick.net.core/12.2.2/magick.net.core.12.2.2.nupkg.sha512"
+  ],
+  "logs": []
+}

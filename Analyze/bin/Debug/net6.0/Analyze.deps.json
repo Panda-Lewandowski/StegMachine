@@ -1,0 +1,101 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "Analyze/1.0.0": {
+        "dependencies": {
+          "Magick.NET-Q8-AnyCPU": "12.2.2"
+        },
+        "runtime": {
+          "Analyze.dll": {}
+        }
+      },
+      "Magick.NET-Q8-AnyCPU/12.2.2": {
+        "dependencies": {
+          "Magick.NET.Core": "12.2.2"
+        },
+        "runtime": {
+          "lib/netstandard21/Magick.NET-Q8-AnyCPU.dll": {
+            "assemblyVersion": "12.2.0.0",
+            "fileVersion": "12.2.2.0"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/linux-arm64/native/Magick.Native-Q8-arm64.dll.so": {
+            "rid": "linux-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-musl-x64/native/Magick.Native-Q8-x64.dll.so": {
+            "rid": "linux-musl-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-x64/native/Magick.Native-Q8-x64.dll.so": {
+            "rid": "linux-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/osx-arm64/native/Magick.Native-Q8-arm64.dll.dylib": {
+            "rid": "osx-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/osx-x64/native/Magick.Native-Q8-x64.dll.dylib": {
+            "rid": "osx-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-arm64/native/Magick.Native-Q8-arm64.dll": {
+            "rid": "win-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x64/native/Magick.Native-Q8-x64.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x86/native/Magick.Native-Q8-x86.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Magick.NET.Core/12.2.2": {
+        "runtime": {
+          "lib/netstandard21/Magick.NET.Core.dll": {
+            "assemblyVersion": "12.2.0.0",
+            "fileVersion": "12.2.2.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Analyze/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Magick.NET-Q8-AnyCPU/12.2.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-QJX4/uJYAbX49ShJz/s8RWw9KhX5v9ewf6Ac5z8uxAKbIMtnVWKs0pFxFDH8LGNRUytZGP2XNwGvVZ+KHfET1A==",
+      "path": "magick.net-q8-anycpu/12.2.2",
+      "hashPath": "magick.net-q8-anycpu.12.2.2.nupkg.sha512"
+    },
+    "Magick.NET.Core/12.2.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-U4aPbh0BRlwSeP/5waebv8oVTrp66gRHxVj1o6dRpZk5kD5SPz4i8asdaClL5B2oqWNVNrGHD3Uc5Bz4Ao5G8g==",
+      "path": "magick.net.core/12.2.2",
+      "hashPath": "magick.net.core.12.2.2.nupkg.sha512"
+    }
+  }
+}
