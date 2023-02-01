@@ -1,8 +1,9 @@
 # How to use
 
-For run project you need dotnet 
+>For run project you need dotnet 
 
-Running project in console
+>Running project in console
+
 ```dotnet run project```
 
 
