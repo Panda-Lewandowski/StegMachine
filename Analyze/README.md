@@ -2,7 +2,7 @@
 
 >```dotnet run project```
 
->For Windows and MacOS you need
+> For Windows and MacOS you need
   Delete Magick.NET for Linux and install for you system
 
   ```dotnet remove package Magick.NET-Q8-AnyCPU --version 12.2.2```
