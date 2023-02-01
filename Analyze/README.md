@@ -1,7 +1,5 @@
 # How to use
 
->For run project you need dotnet 
-
 >Running project in console
 
 ```dotnet run project```
