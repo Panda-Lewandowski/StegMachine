@@ -93,16 +93,16 @@ public class Program
         var origin_image="";
         var stego_container = "";
         Console.WriteLine("Write path to origine image:");
-       // origin_image = Convert.ToString(Console.ReadLine());
+        origin_image = Convert.ToString(Console.ReadLine());
         Console.WriteLine("Write path to stego container:");
-        //stego_container = Convert.ToString(Console.ReadLine());
+        stego_container = Convert.ToString(Console.ReadLine());
         origin_image = "/home/avsjanka/Desktop/Start.jpg";
         stego_container = "/home/avsjanka/Desktop/OUT.png";
         Console.WriteLine($"Using of DeEgger is {is_deegg(stego_container)}");
         Console.WriteLine($"Using of Anubis is {is_anubis(stego_container)}");
         var diffImagePath = @"/home/avsjanka/Desktop/Projects/Stegano project/Analyze/OUT_New.png";
         Console.WriteLine("Write path to compare image:");
-        //diffImagePath = Convert.ToString(Console.ReadLine());
+        diffImagePath = Convert.ToString(Console.ReadLine());
         using (MagickImage origin = new MagickImage(origin_image))
         using (MagickImage stego = new MagickImage(stego_container))
         using (MagickImage diffImage = new MagickImage())
